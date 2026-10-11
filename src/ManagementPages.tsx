@@ -1,0 +1,6 @@
+export { AccountsPage } from './pages/AccountsPage'
+export { AssignmentsPage } from './pages/AssignmentsPage'
+export { ClassesPage } from './pages/ClassesPage'
+export { CoursesPage } from './pages/CoursesPage'
+export { DashboardPage } from './pages/DashboardPage'
+export { SchedulePage } from './pages/SchedulePage'
