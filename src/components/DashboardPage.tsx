@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom'
 
 import type { CurrentUser } from '../types/auth'
+import BrandLockup from './BrandLockup'
+import CollaborationVisual from './CollaborationVisual'
+import DashboardOverview from './DashboardOverview'
+import { canViewClasses } from '../utils/classAccess'
 
 
 interface DashboardPageProps {
@@ -10,7 +14,7 @@ interface DashboardPageProps {
 
 const roleNames: Record<string, string> = {
   ADMIN: 'Quản trị viên',
-  INSTRUCTOR: 'Giảng viên',
+  INSTRUCTOR: 'Giảng viên', TEACHER: 'Giảng viên', ASSISTANT: 'Trợ giảng', TA: 'Trợ giảng',
   STUDENT: 'Học viên',
   ACCOUNTANT: 'Kế toán',
   TRAINING_MANAGER: 'Quản lý đào tạo',
@@ -154,6 +158,7 @@ function DashboardPage({
 
   const visibleActions = quickActions.filter(
     (action) => {
+      if (action.path === '/classes') return canViewClasses(user)
       if (!action.permission) {
         return true
       }
@@ -167,19 +172,21 @@ function DashboardPage({
 
   return (
     <div className="dashboard-page">
+      <div className="dashboard-page-heading"><div><span className="workspace-eyebrow">KHÔNG GIAN LÀM VIỆC</span><h1>Tổng quan đào tạo</h1><p>Mọi hoạt động đào tạo, trong một không gian.</p></div><Link to="/profile" className="dashboard-profile-link">Hồ sơ của tôi <span aria-hidden="true">↗</span></Link></div>
+      <DashboardOverview user={user} />
       <section className="dashboard-welcome-card">
         <div className="dashboard-welcome-content">
           <span className="dashboard-welcome-label">
-            TRANG CHỦ
+            KHÔNG GIAN ĐÀO TẠO SỐ
           </span>
 
-          <h1>
+          <h2>
             Xin chào, {user.full_name}
-          </h1>
+          </h2>
 
           <p>
-            Chào mừng bạn quay trở lại Hệ thống
-            quản lý đào tạo.
+            Một không gian kết nối. Nhiều cơ hội phát triển.
+            <br />Cùng ICTU × CodeGym Việt Nam tiếp nối hành trình đào tạo.
           </p>
 
           <div className="dashboard-role">
@@ -191,14 +198,16 @@ function DashboardPage({
           </div>
         </div>
 
-        <div className="dashboard-welcome-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M2 10l10-5 10 5-10 5L2 10z" />
-            <path d="M6 12v5c3 2 9 2 12 0v-5" />
-          </svg>
+        <div className="dashboard-partnership-visual">
+          <CollaborationVisual />
         </div>
       </section>
 
+      <section className="partnership-strip" aria-label="Hợp tác xây dựng hệ thống">
+        <BrandLockup compact />
+        <div><h2>Tri thức đại học. Thực hành công nghệ.</h2><p>Hợp tác xây dựng nền tảng quản lý đào tạo, đồng hành cùng mỗi hành trình học tập.</p></div>
+        <span className="partnership-strip-mark" aria-hidden="true">↗</span>
+      </section>
 
       <section className="dashboard-section">
         <div className="dashboard-section-header">
@@ -214,6 +223,7 @@ function DashboardPage({
         </div>
 
 
+        {visibleActions.length === 0 && <p className="dashboard-empty">Tài khoản của bạn chưa được cấp quyền truy cập các chức năng đào tạo. Bạn có thể xem thông tin cá nhân trong menu hoặc liên hệ quản trị viên để được hỗ trợ.</p>}
         <div className="dashboard-action-grid">
           {visibleActions.map((action) => (
             <Link

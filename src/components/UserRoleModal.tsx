@@ -1,3 +1,4 @@
+import { getRolePermissions } from '../services/rolePermissionService'
 import {
   useEffect,
   useState,
@@ -19,55 +20,19 @@ import type {
 
 
 interface UserRoleModalProps {
-  user: UserItem
+  user: Pick<UserItem, 'user_id' | 'full_name'>
   currentUser: CurrentUser
   onClose: () => void
   onUpdated: () => void
 }
 
 
-const roles = [
-  {
-    role_id: 1,
-    role_name: 'ADMIN',
-    label: 'Quản trị viên',
-  },
-  {
-    role_id: 2,
-    role_name: 'INSTRUCTOR',
-    label: 'Giảng viên',
-  },
-  {
-    role_id: 3,
-    role_name: 'STUDENT',
-    label: 'Học viên',
-  },
-  {
-    role_id: 4,
-    role_name: 'ACCOUNTANT',
-    label: 'Kế toán',
-  },
-  {
-    role_id: 5,
-    role_name: 'TRAINING_MANAGER',
-    label: 'Quản lý đào tạo',
-  },
-  {
-    role_id: 6,
-    role_name: 'ADMISSIONS',
-    label: 'Tuyển sinh',
-  },
-  {
-    role_id: 7,
-    role_name: 'ACADEMIC_AFFAIRS',
-    label: 'Giáo vụ',
-  },
-  {
-    role_id: 8,
-    role_name: 'MANAGEMENT',
-    label: 'Ban quản lý',
-  },
-]
+const roleLabels: Record<string, string> = {
+  ADMIN: 'Quản trị viên', INSTRUCTOR: 'Giảng viên', TEACHER: 'Giảng viên',
+  STUDENT: 'Học viên', ACCOUNTANT: 'Kế toán', TRAINING_MANAGER: 'Quản lý đào tạo',
+  ADMISSIONS: 'Tuyển sinh', ACADEMIC_AFFAIRS: 'Giáo vụ', MANAGEMENT: 'Ban quản lý',
+  ASSISTANT: 'Trợ giảng', TA: 'Trợ giảng',
+}
 
 
 function UserRoleModal({
@@ -76,6 +41,7 @@ function UserRoleModal({
   onClose,
   onUpdated,
 }: UserRoleModalProps) {
+  const [roles, setRoles] = useState<{ role_id: number; role_name: string; label: string }[]>([])
   const [selectedRoleIds, setSelectedRoleIds] =
     useState<number[]>([])
 
@@ -95,9 +61,8 @@ function UserRoleModal({
       setError('')
 
       try {
-        const result = await getUserRoles(
-          user.user_id,
-        )
+        const [result, catalog] = await Promise.all([getUserRoles(user.user_id), getRolePermissions()])
+        setRoles(catalog.roles.map(role => ({ ...role, label: roleLabels[role.role_name] || role.role_name })))
 
         const roleIds = result.roles.map(
           (role) => role.role_id,
@@ -142,8 +107,9 @@ function UserRoleModal({
 
 
   const handleSave = async () => {
-    if (isReadOnly || saving || loading) return
-    if (isOwnAccount && originalRoleIds.includes(1) && !selectedRoleIds.includes(1)) {
+    if (isReadOnly || saving || loading || !roles.length) return
+    const adminRoleId = roles.find(role => role.role_name === 'ADMIN')?.role_id
+    if (isOwnAccount && adminRoleId !== undefined && originalRoleIds.includes(adminRoleId) && !selectedRoleIds.includes(adminRoleId)) {
       setError('Bạn không thể tự thu hồi vai trò Quản trị viên của chính mình.')
       return
     }

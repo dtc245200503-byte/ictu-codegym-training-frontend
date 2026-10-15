@@ -26,7 +26,7 @@ interface RolePermissionPageProps {
 
 const ROLE_LABELS: Record<string, string> = {
   ADMIN: 'Quản trị viên',
-  INSTRUCTOR: 'Giảng viên',
+  INSTRUCTOR: 'Giảng viên', TEACHER: 'Giảng viên', ASSISTANT: 'Trợ giảng', TA: 'Trợ giảng',
   STUDENT: 'Học viên',
   ACCOUNTANT: 'Kế toán',
   TRAINING_MANAGER: 'Quản lý đào tạo',
@@ -174,7 +174,7 @@ function RolePermissionPage({
 
 
   return (
-    <div>
+    <div className="role-permission-page">
       <h1>Vai trò và phân quyền</h1>
 
       <p>
@@ -207,12 +207,14 @@ function RolePermissionPage({
       )}
 
       <div
+        className="role-matrix-wrap"
         style={{
           overflowX: 'auto',
           marginTop: '24px',
         }}
       >
         <table
+          className="role-matrix"
           style={{
             width: '100%',
             borderCollapse: 'collapse',
@@ -283,6 +285,7 @@ function RolePermissionPage({
                     >
                       <input
                         type="checkbox"
+                        aria-label={(ROLE_LABELS[role.role_name] ?? role.role_name) + ': ' + (permission.description ?? permission.permission_name)}
                         checked={
                           role.permission_ids.includes(
                             permission.permission_id,

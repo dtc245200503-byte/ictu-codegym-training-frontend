@@ -1,0 +1,8 @@
+.class-row-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; min-width: 210px; }
+.class-table th:last-child { text-align: right; }
+.class-subject-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; padding: 8px; }
+.class-subject-detail { border: 1px solid var(--border-color, #e1e8ef); border-radius: 12px; padding: 18px; background: #fbfdfd; }
+.class-subject-detail h2 { font-size: 14px; margin: 0 0 8px; color: var(--navy, #142d4e); }
+.class-subject-detail h2 span { display: inline-block; margin-right: 6px; color: var(--primary, #087f8c); }
+.class-subject-detail p { font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; margin: 10px 0 0; }
+.class-mine-badge { display: inline-block; margin-left: 8px; padding: 2px 7px; border-radius: 6px; background: #e8f5f4; color: #066773; font-size: 11px; }

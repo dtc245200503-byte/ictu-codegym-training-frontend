@@ -78,7 +78,7 @@ function UserManagementPage({
 
   const roleNames: Record<string, string> = {
     ADMIN: 'Quản trị viên',
-    INSTRUCTOR: 'Giảng viên',
+    INSTRUCTOR: 'Giảng viên', TEACHER: 'Giảng viên', ASSISTANT: 'Trợ giảng', TA: 'Trợ giảng',
     STUDENT: 'Học viên',
     ACCOUNTANT: 'Kế toán',
     TRAINING_MANAGER: 'Quản lý đào tạo',

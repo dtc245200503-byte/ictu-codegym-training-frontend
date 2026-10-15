@@ -139,7 +139,7 @@ body {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background-image: url('/login-background.jpg');
+  background-image: none;
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
@@ -4376,3 +4376,8 @@ body {
     line-height: 1.6;
   }
 }
+
+/* Sprint 2: profile entry in the header. */
+a.topbar-user { color: inherit; text-decoration: none; border-radius: 12px; padding: 6px 10px; }
+a.topbar-user:hover { background: #eff6ff; }
+a.topbar-user:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }

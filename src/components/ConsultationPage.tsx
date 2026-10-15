@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ConsultationError, getConsultationChallenge, sendConsultation } from '../services/consultationService'
 import type { ConsultationChallenge, ConsultationReceipt } from '../services/consultationService'
+import BrandLockup from './BrandLockup'
 import './ConsultationPage.css'
 
 export default function ConsultationPage() {
@@ -67,7 +68,7 @@ export default function ConsultationPage() {
   }
 
   return <main className="consultation-page">
-    <header className="consultation-header"><a className="consultation-brand" href="/dang-ky-tu-van" aria-label="EDUCATE — Đăng ký tư vấn"><span aria-hidden="true">E</span><div><strong>EDUCATE</strong><small>Đồng hành cùng việc học của bạn</small></div></a><a className="consultation-login" href="/">Đăng nhập hệ thống</a></header>
+    <header className="consultation-header"><a className="consultation-brand" href="/dang-ky-tu-van" aria-label="ICTU × CodeGym Việt Nam — Đăng ký tư vấn"><BrandLockup compact /></a><a className="consultation-login" href="/">Đăng nhập hệ thống</a></header>
     <div className="consultation-content"><section className="consultation-intro" aria-labelledby="consultation-title"><span className="consultation-eyebrow">TƯ VẤN ĐÀO TẠO</span><h1 id="consultation-title">Bắt đầu hành trình học <br />phù hợp với bạn.</h1><p>Để lại thông tin và nhu cầu học tập. Trung tâm sẽ gọi lại, giúp bạn chọn chương trình và lộ trình phù hợp.</p><div className="consultation-promise"><span aria-hidden="true">✓</span><div><strong>Liên hệ trong 1 ngày làm việc</strong><p>Bạn không cần đăng nhập hoặc tự tìm số điện thoại của trung tâm.</p></div></div><p className="consultation-privacy">Thông tin bạn cung cấp được dùng để liên hệ tư vấn về nhu cầu học tập.</p></section>
       <section className="consultation-card" aria-labelledby="consultation-form-title">
         {receipt ? <div className="consultation-success" ref={successRef} tabIndex={-1} role="status"><span className="consultation-success-icon" aria-hidden="true">✓</span><h2 id="consultation-form-title">Đăng ký tư vấn thành công</h2><p>{receipt.message}</p><div className="consultation-contact-promise">{receipt.contact_promise}</div><p>Bạn vui lòng giữ điện thoại để trung tâm có thể liên hệ.</p><a className="consultation-login" href="/">Về trang đăng nhập</a></div> : <><h2 id="consultation-form-title">Đăng ký tư vấn</h2><p className="consultation-subtitle">Chỉ cần họ tên và số điện thoại. Các mục có * là bắt buộc.</p>
@@ -81,6 +82,6 @@ export default function ConsultationPage() {
           <div className="consultation-verification"><label htmlFor="consultation-answer">Xác minh trước khi gửi *</label>{challengeLoading ? <p role="status">Đang tải câu hỏi xác minh...</p> : challengeError ? <p className="consultation-error" role="alert">{challengeError}</p> : challenge && <><p id="consultation-question">{challenge.question}</p><input id="consultation-answer" inputMode="numeric" autoComplete="off" maxLength={3} aria-describedby="consultation-question" disabled={expired} value={answer} onChange={event => setAnswer(event.target.value)} placeholder="Nhập kết quả" required /></>}
             {expired && <p className="consultation-error" role="alert">Câu hỏi đã hết hạn. Vui lòng lấy câu hỏi mới; thông tin bạn nhập được giữ nguyên.</p>}<button type="button" className="consultation-refresh" disabled={challengeLoading || blocked} onClick={() => setChallengeReload(value => value + 1)}>{challengeError || expired ? 'Thử lại câu hỏi xác minh' : 'Lấy câu hỏi khác'}</button></div>
         </fieldset>{error && <p className="consultation-error" role="alert">{error}</p>}{blocked && <p className="consultation-error" role="status">Bạn có thể thử lại sau khoảng {Math.ceil((retryAt - now) / 60000)} phút.</p>}<button className="consultation-submit" type="submit" disabled={busy || challengeLoading || !challenge || blocked || now < readyAt || expired}>{busy ? 'Đang gửi đăng ký...' : 'Gửi đăng ký tư vấn'}</button><p className="consultation-form-note">Trung tâm sẽ liên hệ trong vòng 1 ngày làm việc.</p></form></>}
-      </section></div><footer className="consultation-footer">EDUCATE · Hệ thống quản lý đào tạo</footer>
+      </section></div><footer className="consultation-footer">ICTU × CodeGym Việt Nam · Hệ thống quản lý đào tạo</footer>
   </main>
 }

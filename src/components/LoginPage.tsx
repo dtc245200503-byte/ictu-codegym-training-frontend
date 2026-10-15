@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import './ConsultationPage.css'
-import './LoginPage.css'
+import AuthShell from './AuthShell'
 
 
 interface LoginPageProps {
@@ -50,7 +49,7 @@ function LoginPage({
 
 
   return (
-    <div className="login-page">
+    <AuthShell>
       <div className="login-card login-card--welcome">
         <div className="login-heading">
           <span className="login-heading-icon" aria-hidden="true">
@@ -59,11 +58,11 @@ function LoginPage({
               <path d="M6 11v6c3 3 9 3 12 0v-6M22 9v6" />
             </svg>
           </span>
-          <p className="login-eyebrow">Hệ thống quản lý đào tạo</p>
-          <h1>Đăng nhập</h1>
+          <p className="login-eyebrow">KHÔNG GIAN ĐÀO TẠO SỐ</p>
+          <h1>Chào mừng trở lại<span className="login-heading-dot">.</span></h1>
 
           <p className="login-subtitle">
-            Chào mừng bạn quay lại
+            Đăng nhập để tiếp tục hành trình của bạn.
           </p>
         </div>
 
@@ -71,7 +70,7 @@ function LoginPage({
         <form onSubmit={handleSubmit}>
           <div className="login-field">
             <label htmlFor="email">
-              Email
+              Địa chỉ email
             </label>
 
             <input
@@ -82,7 +81,7 @@ function LoginPage({
               onChange={(event) =>
                 setEmail(event.target.value)
               }
-              placeholder="Nhập email"
+              placeholder="ban@example.com"
               required
             />
           </div>
@@ -125,6 +124,7 @@ function LoginPage({
                     ? 'Ẩn mật khẩu'
                     : 'Hiện mật khẩu'
                 }
+                aria-pressed={showPassword}
                 title={
                   showPassword
                     ? 'Ẩn mật khẩu'
@@ -232,7 +232,8 @@ function LoginPage({
           >
             {loading
               ? 'Đang đăng nhập...'
-              : 'Đăng nhập'}
+              : 'Đăng nhập hệ thống'}
+            {!loading && <span aria-hidden="true"> →</span>}
           </button>
         </form>
         <div className="login-consultation">
@@ -240,7 +241,7 @@ function LoginPage({
           <a className="consultation-login-link" href="/dang-ky-tu-van">Đăng ký tư vấn <span aria-hidden="true">→</span></a>
         </div>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 

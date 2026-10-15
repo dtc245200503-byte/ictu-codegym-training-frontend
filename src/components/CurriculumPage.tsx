@@ -129,7 +129,7 @@ export default function CurriculumPage({ onSessionExpired }: Props) {
   }
   const add = (event: FormEvent) => {
     event.preventDefault()
-    if (!subjectId) { setError('Vui lòng chọn môn học cần thêm.'); return }
+    if (!subjectId || !available.some(subject => String(subject.subject_id) === subjectId)) { setError('Vui lòng chọn môn học cần thêm.'); return }
     void mutate(() => addProgramSubject(id, Number(subjectId), addPrerequisite ? Number(addPrerequisite) : null), 'Đã thêm môn vào lộ trình.')
   }
   const closeRemoval = () => { if (!busy) { setRemoving(null); removeTrigger.current?.focus() } }
@@ -153,25 +153,31 @@ export default function CurriculumPage({ onSessionExpired }: Props) {
           const earlier = items.slice(0, index)
           return <li key={item.subject_id} data-route-subject={item.subject_id} className={`curriculum-card ${draggedId === item.subject_id ? 'dragging' : ''} ${overId === item.subject_id ? 'drop-target' : ''}`}>
             <div className="curriculum-card-heading"><button className="curriculum-drag" aria-label={`Kéo để đổi thứ tự môn ${item.subject_name}`} title="Kéo thả để đổi thứ tự" disabled={busy} onPointerDown={event => pointerDown(event, item.subject_id)} onPointerMove={pointerMove} onPointerUp={event => pointerEnd(event)} onPointerCancel={event => pointerEnd(event, true)} onKeyDown={event => { if (event.key === 'ArrowUp' && index > 0) { event.preventDefault(); move(item.subject_id, items[index - 1].subject_id) } if (event.key === 'ArrowDown' && index < items.length - 1) { event.preventDefault(); move(item.subject_id, items[index + 1].subject_id) } }}>⋮⋮</button>
-              <span className="curriculum-position">{index + 1}</span><div><strong className="curriculum-subject-name">{item.subject_name}</strong><small>{item.subject_code} · {item.session_count} buổi · Trọng số {Number(item.weight).toLocaleString('vi-VN')}</small></div></div>
+              <span className="curriculum-position">{index + 1}</span><div><strong className="curriculum-subject-name">{item.subject_name}</strong><small>{item.subject_code} · {item.session_count} buổi · Trọng số {Number(item.weight).toLocaleString('vi-VN')}</small></div><button className="curriculum-remove program-delete" disabled={busy || dependents.length > 0} onClick={event => { removeTrigger.current = event.currentTarget; setRemoving(item); setError('') }}>Gỡ môn</button></div>
             {item.learning_outcomes && <p className="curriculum-outcomes">{item.learning_outcomes}</p>}
             <label htmlFor={`prerequisite-${item.subject_id}`}>Môn tiên quyết</label><ChoiceSelect id={`prerequisite-${item.subject_id}`} className="curriculum-prerequisite" disabled={busy} value={item.prerequisite_subject_id ?? ''} onChange={event => void mutate(() => setPrerequisite(id, item.subject_id, event.target.value ? Number(event.target.value) : null), 'Đã lưu môn tiên quyết.')}>
               <option value="">Không có môn tiên quyết</option>{earlier.map(prereq => <option key={prereq.subject_id} value={prereq.subject_id}>{prereq.subject_code} — {prereq.subject_name}</option>)}
               {item.prerequisite_subject_id !== null && !earlier.some(prereq => prereq.subject_id === item.prerequisite_subject_id) && <option value={item.prerequisite_subject_id}>Tiên quyết chưa đứng trước môn này — cần cập nhật</option>}
             </ChoiceSelect>
-            <div className="curriculum-card-actions"><button className="curriculum-up" disabled={busy || index === 0} aria-label={`Đưa môn ${item.subject_name} lên`} onClick={() => move(item.subject_id, items[index - 1].subject_id)}>↑ Lên</button><button className="curriculum-down" disabled={busy || index === items.length - 1} aria-label={`Đưa môn ${item.subject_name} xuống`} onClick={() => move(item.subject_id, items[index + 1].subject_id)}>↓ Xuống</button><button className="curriculum-remove program-delete" disabled={busy || dependents.length > 0} onClick={event => { removeTrigger.current = event.currentTarget; setRemoving(item); setError('') }}>Gỡ môn</button></div>
+            <div className="curriculum-card-actions"><button className="curriculum-up" disabled={busy || index === 0} aria-label={`Đưa môn ${item.subject_name} lên`} onClick={() => move(item.subject_id, items[index - 1].subject_id)}>↑ Lên</button><button className="curriculum-down" disabled={busy || index === items.length - 1} aria-label={`Đưa môn ${item.subject_name} xuống`} onClick={() => move(item.subject_id, items[index + 1].subject_id)}>↓ Xuống</button></div>
             {dependents.length > 0 && <small className="curriculum-dependent-note">Đang là tiên quyết của: {dependents.map(dependent => dependent.subject_name).join(', ')}. Cập nhật các môn này trước khi gỡ.</small>}
           </li>
         })}</ol>}
       </div>
-      <aside className="curriculum-add"><h2>Thêm môn học</h2><p>Chọn môn có sẵn; thông tin môn được dùng chung giữa các chương trình.</p>
+      <aside className="curriculum-add"><h2>Thêm môn học</h2><p>Tìm và chọn một môn trong danh mục, kiểm tra môn tiên quyết rồi thêm vào lộ trình. Môn đã thêm sẽ không xuất hiện trong danh sách này.</p>
         <form onSubmit={add}><fieldset disabled={busy}>
           <label htmlFor="route-search">Tìm môn trong danh mục</label><input id="route-search" maxLength={100} placeholder="Nhập mã hoặc tên môn" value={search} onChange={event => { setSearch(event.target.value); setPage(1); setSubjectId('') }} />
-          <label htmlFor="route-subject">Môn học cần thêm</label><ChoiceSelect id="route-subject" disabled={optionLoading || !!optionError} value={subjectId} onChange={event => setSubjectId(event.target.value)}><option value="">{optionLoading ? 'Đang tải môn học...' : 'Chọn môn học'}</option>{available.map(subject => <option key={subject.subject_id} value={subject.subject_id}>{subject.code} — {subject.name} ({subject.session_count} buổi)</option>)}</ChoiceSelect>
+          <fieldset className="curriculum-subject-options" disabled={optionLoading || !!optionError}><legend>Môn học có thể thêm</legend>
+            {optionLoading ? <p role="status">Đang tải môn học...</p> : !optionError && available.map(subject => <label key={subject.subject_id} className={subjectId === String(subject.subject_id) ? 'selected' : ''}>
+              <input type="radio" name="route-subject" value={subject.subject_id} checked={subjectId === String(subject.subject_id)} onChange={event => setSubjectId(event.target.value)} />
+              <span><strong>{subject.code} — {subject.name}</strong><small>{subject.session_count} buổi</small></span>
+            </label>)}
+          </fieldset>
           {optionError && <p className="program-error" role="alert">{optionError} <button type="button" onClick={() => setOptionReload(value => value + 1)}>Thử lại</button></p>}
           {!optionLoading && !optionError && available.length === 0 && <p>Chưa có môn phù hợp để thêm. Có thể môn đã nằm trong lộ trình hoặc chưa được khai báo trong danh mục.</p>}
           <div className="curriculum-option-pages"><small>{optionTotal} môn có thể thêm · Trang {page}/{Math.max(1, Math.ceil(optionTotal / 20))}</small><div><button type="button" disabled={optionLoading || page <= 1} onClick={() => { setPage(page - 1); setSubjectId('') }}>Trước</button><button type="button" disabled={optionLoading || page >= Math.ceil(optionTotal / 20)} onClick={() => { setPage(page + 1); setSubjectId('') }}>Sau</button></div></div>
           <label htmlFor="route-add-prerequisite">Môn tiên quyết</label><ChoiceSelect id="route-add-prerequisite" value={addPrerequisite} onChange={event => setAddPrerequisite(event.target.value)}><option value="">Không có môn tiên quyết</option>{items.map(item => <option key={item.subject_id} value={item.subject_id}>{item.subject_code} — {item.subject_name}</option>)}</ChoiceSelect>
+          {subjectId && !optionLoading && !optionError && <p className="curriculum-selection" role="status">Đã chọn: <strong>{available.find(subject => String(subject.subject_id) === subjectId)?.name}</strong><br />Vị trí sau khi thêm: môn thứ {items.length + 1}. {addPrerequisite ? 'Học sau ' + items.find(item => String(item.subject_id) === addPrerequisite)?.subject_name + '.' : 'Không yêu cầu môn tiên quyết.'}</p>}
           <button className="program-primary curriculum-add-button" type="submit" disabled={!subjectId || optionLoading || !!optionError}>Thêm vào cuối lộ trình</button>
         </fieldset></form></aside>
     </div>

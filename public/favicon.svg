@@ -6,7 +6,7 @@
     width="64"
     height="64"
     rx="14"
-    fill="#2563eb"
+    fill="#4469e8"
   />
 
   <!-- Mũ tốt nghiệp -->
@@ -17,7 +17,7 @@
 
   <path
     d="M18 29V39C18 44 24 48 32 48C40 48 46 44 46 39V29L32 36L18 29Z"
-    fill="#dbeafe"
+    fill="#e1eaff"
   />
 
   <!-- Dây mũ -->
@@ -32,7 +32,7 @@
     cx="54"
     cy="42"
     r="3"
-    fill="#ffffff"
+    fill="#db6545"
   />
 
   <!-- Quyển sách -->

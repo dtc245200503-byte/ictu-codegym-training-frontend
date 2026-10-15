@@ -18,6 +18,7 @@ export default function SubjectLessonsPage({ onSessionExpired }: Props) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [lessonFilter, setLessonFilter] = useState('')
   const [forbidden, setForbidden] = useState(false)
   const [reload, setReload] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -47,7 +48,7 @@ export default function SubjectLessonsPage({ onSessionExpired }: Props) {
   useEffect(() => {
     if (!validId) return
     let active = true
-    setLoading(true); setError(''); setData(null); setSuccess(''); setDialog(null)
+    setLoading(true); setError(''); setData(null); setSuccess(''); setDialog(null); setLessonFilter('')
     getSubjectLessons(id).then(result => { if (active) setData(result) })
       .catch((err: unknown) => { if (active) setError(explain(err)) })
       .finally(() => { if (active) setLoading(false) })
@@ -118,6 +119,7 @@ export default function SubjectLessonsPage({ onSessionExpired }: Props) {
       else if (dialog === 'delete' && selected) await deleteSubjectLesson(id, selected.lesson_id)
       else if (dialog === 'clone') await cloneSubjectLessons(id, Number(sourceId), mode)
       setData(await getSubjectLessons(id))
+      if (dialog === 'delete' || dialog === 'clone') setLessonFilter('')
       setSuccess(dialog === 'clone' ? 'Đã nhân bản danh sách buổi học.' : dialog === 'delete' ? 'Đã gỡ buổi học.' : selected ? 'Đã cập nhật buổi học.' : 'Đã thêm buổi học.')
       setDialog(null); trigger.current?.focus()
     } catch (err) {
@@ -139,11 +141,12 @@ export default function SubjectLessonsPage({ onSessionExpired }: Props) {
     <p className="lesson-capacity">Đã khai báo <strong>{data.items.length}/{data.session_count}</strong> buổi. Số thứ tự từ 1 đến {data.session_count}, không trùng trong cùng môn.</p>
     {full && <p className="lesson-note">Môn đã khai báo đủ số buổi. Có thể sửa các buổi hiện có hoặc tăng số buổi tại danh mục môn học.</p>}
     {success && <p className="program-success" role="status">{success}</p>}
-    <ol className="lesson-list">{data.items.length ? data.items.map(item => <li key={item.lesson_id} data-lesson-id={item.lesson_id} className="lesson-card"><div className="lesson-card-heading"><span className="lesson-number">Buổi {item.sequence_order}</span><h2>{item.topic}</h2></div><h3>Mục tiêu</h3><p className="lesson-objectives">{item.objectives}</p><div className="program-row-actions"><button className="lesson-edit" onClick={event => open('form', event.currentTarget, item)}>Sửa buổi</button><button className="program-delete lesson-delete" onClick={event => open('delete', event.currentTarget, item)}>Gỡ buổi</button></div></li>) : <li className="lesson-empty">Chưa khai báo buổi học. Thêm buổi mới hoặc nhân bản danh sách từ môn khác.</li>}</ol>
+    <div className="lesson-filter"><label htmlFor="lesson-filter">Chọn buổi học</label><ChoiceSelect id="lesson-filter" value={lessonFilter} onChange={event => setLessonFilter(event.target.value)}><option value="">Tất cả buổi học ({data.items.length})</option>{data.items.map(item => <option key={item.lesson_id} value={item.lesson_id}>Buổi {item.sequence_order} — {item.topic}</option>)}</ChoiceSelect></div>
+    <ol className="lesson-list">{data.items.length ? data.items.filter(item => !lessonFilter || String(item.lesson_id) === lessonFilter).map(item => <li key={item.lesson_id} data-lesson-id={item.lesson_id} className="lesson-card"><div className="lesson-card-heading"><span className="lesson-number">Buổi {item.sequence_order}</span><h2>{item.topic}</h2></div><h3>Mục tiêu</h3><p className="lesson-objectives">{item.objectives}</p><div className="program-row-actions"><button className="lesson-edit" onClick={event => open('form', event.currentTarget, item)}>Sửa buổi</button><button className="program-delete lesson-delete" onClick={event => open('delete', event.currentTarget, item)}>Gỡ buổi</button></div></li>) : <li className="lesson-empty">Chưa khai báo buổi học. Thêm buổi mới hoặc nhân bản danh sách từ môn khác.</li>}</ol>
     {dialog && <div className="program-overlay" onMouseDown={event => { if (event.target === event.currentTarget) close() }}><div ref={modal} className="program-dialog lesson-dialog" role="dialog" aria-modal="true" aria-labelledby="lesson-dialog-title" onKeyDown={keyboard}>
       <div className="program-dialog-header"><h2 id="lesson-dialog-title">{dialog === 'form' ? selected ? 'Sửa buổi học' : 'Thêm buổi học' : dialog === 'clone' ? 'Nhân bản buổi học' : 'Gỡ buổi học'}</h2><button disabled={busy} aria-label="Đóng hộp thoại" onClick={close}>×</button></div>
       <form onSubmit={submit} noValidate><fieldset disabled={busy} className="lesson-form">
-        {dialog === 'form' ? <><label htmlFor="lesson-order">Số thứ tự *</label><input id="lesson-order" data-initial-focus type="number" min="1" max={data.session_count} step="1" value={form.sequence_order} onChange={event => setForm({ ...form, sequence_order: event.target.value })} /><label htmlFor="lesson-topic">Chủ đề *</label><input id="lesson-topic" maxLength={255} value={form.topic} onChange={event => setForm({ ...form, topic: event.target.value })} /><label htmlFor="lesson-objectives">Mục tiêu *</label><textarea id="lesson-objectives" maxLength={5000} rows={5} value={form.objectives} onChange={event => setForm({ ...form, objectives: event.target.value })} /></> : dialog === 'delete' ? <><p><strong>Buổi {selected?.sequence_order} — {selected?.topic}</strong></p><p>Gỡ buổi này khỏi môn học? Các buổi khác giữ nguyên số thứ tự.</p></> : <>
+        {dialog === 'form' ? <><label htmlFor="lesson-order">Số thứ tự *</label><ChoiceSelect id="lesson-order" data-initial-focus value={form.sequence_order} onChange={event => setForm({ ...form, sequence_order: event.target.value })}>{Array.from({ length: data.session_count }, (_, index) => index + 1).filter(order => !data.items.some(item => item.lesson_id !== selected?.lesson_id && item.sequence_order === order)).map(order => <option key={order} value={order}>Buổi {order}</option>)}</ChoiceSelect><label htmlFor="lesson-topic">Chủ đề *</label><input id="lesson-topic" maxLength={255} value={form.topic} onChange={event => setForm({ ...form, topic: event.target.value })} /><label htmlFor="lesson-objectives">Mục tiêu *</label><textarea id="lesson-objectives" maxLength={5000} rows={5} value={form.objectives} onChange={event => setForm({ ...form, objectives: event.target.value })} /></> : dialog === 'delete' ? <><p><strong>Buổi {selected?.sequence_order} — {selected?.topic}</strong></p><p>Gỡ buổi này khỏi môn học? Các buổi khác giữ nguyên số thứ tự.</p></> : <>
           <label htmlFor="lesson-source-search">Tìm môn nguồn</label><input id="lesson-source-search" data-initial-focus maxLength={100} placeholder="Nhập mã hoặc tên môn" value={search} onChange={event => { setSearch(event.target.value); setPage(1); setSourceId('') }} />
           <label htmlFor="lesson-source">Môn nguồn</label><ChoiceSelect id="lesson-source" disabled={optionsLoading || !!optionsError} value={sourceId} onChange={event => setSourceId(event.target.value)}><option value="">{optionsLoading ? 'Đang tải môn học...' : 'Chọn môn khác để nhân bản'}</option>{sources.map(subject => <option key={subject.subject_id} value={subject.subject_id}>{subject.code} — {subject.name}</option>)}</ChoiceSelect>
           {optionsError && <p className="program-error" role="alert">{optionsError} <button type="button" onClick={() => setOptionReload(value => value + 1)}>Thử lại</button></p>}

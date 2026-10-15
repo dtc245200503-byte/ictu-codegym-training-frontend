@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import {
   changePassword,
@@ -96,6 +97,7 @@ function EyeOffIcon() {
 function ChangePasswordPage({
   onSuccess,
 }: ChangePasswordPageProps) {
+  const navigate = useNavigate()
   const [
     currentPassword,
     setCurrentPassword,
@@ -149,11 +151,13 @@ function ChangePasswordPage({
 
     if (
       newPassword.length < 8
-      || !/[A-Za-z]/.test(newPassword)
+      || !/[A-Z]/.test(newPassword)
+      || !/[a-z]/.test(newPassword)
       || !/[0-9]/.test(newPassword)
+      || !/[@$!%*?&]/.test(newPassword)
     ) {
       setError(
-        'Mật khẩu mới phải có ít nhất 8 ký tự, gồm chữ và số.',
+        'Mật khẩu mới phải có ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt (@, $, !, %, *, ?, &).',
       )
       return
     }
@@ -182,6 +186,7 @@ function ChangePasswordPage({
       onSuccess(
         'Đổi mật khẩu thành công. Các phiên đăng nhập khác đã được thu hồi.',
       )
+      navigate('/', { replace: true })
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -307,7 +312,7 @@ function ChangePasswordPage({
             </div>
 
             <small className="password-requirement">
-              Tối thiểu 8 ký tự, có chữ và số.
+              Tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt (@, $, !, %, *, ?, &).
             </small>
           </div>
 

@@ -448,7 +448,7 @@ export async function confirmImportUsers(
 
   if (!response.ok) {
     throw new Error(
-      data.detail || 'Không thể xác nhận nhập người dùng.',
+      typeof data.detail === 'string' ? data.detail : 'Dữ liệu nhập không hợp lệ. Mỗi lô được phép có từ 1 đến 100 tài khoản.',
     )
   }
 

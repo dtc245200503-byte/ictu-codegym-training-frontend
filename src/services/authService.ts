@@ -150,6 +150,7 @@ export async function changePassword(
       body: JSON.stringify({
         current_password: currentPassword,
         new_password: newPassword,
+        confirm_password: newPassword,
         refresh_token: refreshToken,
       }),
     },
@@ -159,8 +160,7 @@ export async function changePassword(
 
   if (!response.ok) {
     throw new Error(
-      data.detail
-        || 'Không thể đổi mật khẩu.',
+      typeof data.detail === 'string' ? data.detail : 'Thông tin đổi mật khẩu không hợp lệ. Vui lòng kiểm tra lại các trường.',
     )
   }
 }

@@ -2,6 +2,8 @@ import {
   useState,
   useRef,
 } from 'react'
+import ChoiceSelect from './ChoiceSelect'
+import './ImportUserModal.css'
 
 import {
   downloadImportTemplate,
@@ -37,6 +39,20 @@ export default function ImportUserModal({
   const [error, setError] = useState('')
   const [previewData, setPreviewData] = useState<ImportPreviewResponse | null>(null)
   const [summaryData, setSummaryData] = useState<ImportSummaryResponse | null>(null)
+  const [category, setCategory] = useState<'all' | 'valid' | 'invalid'>('all')
+  const [roleFilter, setRoleFilter] = useState('')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [progress, setProgress] = useState(0)
+  const [unconfirmed, setUnconfirmed] = useState(0)
+  const importing = useRef(false)
+  const pageSize = 50
+  const filteredRows = (previewData?.rows || []).filter(row =>
+    (category === 'all' || (category === 'valid' ? row.is_valid : !row.is_valid))
+    && (!roleFilter || row.role_name === roleFilter)
+    && (row.full_name + ' ' + row.email).toLocaleLowerCase('vi-VN').includes(search.trim().toLocaleLowerCase('vi-VN')))
+  const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize))
+  const visibleRows = filteredRows.slice((page - 1) * pageSize, page * pageSize)
 
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -50,6 +66,7 @@ export default function ImportUserModal({
     setError('')
     setPreviewData(null)
     setSummaryData(null)
+    setCategory('all'); setRoleFilter(''); setSearch(''); setPage(1); setProgress(0); setUnconfirmed(0)
   }
 
   const handleClose = () => {
@@ -98,6 +115,11 @@ export default function ImportUserModal({
       return
     }
 
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      setError('Tệp vượt quá 10 MB. Vui lòng chia thành các tệp nhỏ hơn.')
+      setFile(null)
+      return
+    }
     setFile(selectedFile)
     setError('')
   }
@@ -137,6 +159,7 @@ export default function ImportUserModal({
     try {
       const data = await previewUsersFromExcel(file)
       setPreviewData(data)
+      setCategory('all'); setRoleFilter(''); setSearch(''); setPage(1); setUnconfirmed(0)
       setStep('PREVIEW')
     } catch (err) {
       if (err instanceof Error) {
@@ -150,7 +173,7 @@ export default function ImportUserModal({
   }
 
   const handleConfirmImport = async () => {
-    if (!previewData) return
+    if (!previewData || importing.current) return
 
     const validRows = previewData.rows
       .filter((row) => row.is_valid && row.role_id !== null)
@@ -167,21 +190,31 @@ export default function ImportUserModal({
       return
     }
 
-    setLoading(true)
-    setError('')
-
+    importing.current = true
+    setLoading(true); setError(''); setProgress(0); setUnconfirmed(0)
+    const result: ImportSummaryResponse = {
+      message: 'Nhập người dùng hoàn tất', total_rows: previewData.total_rows,
+      success_count: 0, failed_count: previewData.invalid_count,
+      errors: previewData.rows.filter(row => !row.is_valid).map(row => `Dòng ${row.row_index}: ${row.errors.join('; ')}`),
+      summary_text: '',
+    }
+    let confirmed = 0
     try {
-      const result = await confirmImportUsers(validRows)
-      setSummaryData(result)
-      setStep('SUMMARY')
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('Có lỗi xảy ra khi nhập người dùng.')
+      for (let offset = 0; offset < validRows.length; offset += 100) {
+        const batch = await confirmImportUsers(validRows.slice(offset, offset + 100))
+        result.success_count += batch.success_count
+        result.failed_count += batch.failed_count
+        result.errors.push(...batch.errors)
+        confirmed += batch.total_rows
+        setProgress(confirmed)
       }
+    } catch (err) {
+      result.message = 'Quá trình nhập bị gián đoạn'
+      setUnconfirmed(validRows.length - confirmed)
+      setError((err instanceof Error ? err.message : 'Không thể kết nối đến hệ thống.') + ' Các lô đã xác nhận được giữ lại. Hãy kiểm tra lại tệp trước khi nhập tiếp; lô bị ngắt có thể đã được lưu.')
     } finally {
-      setLoading(false)
+      result.summary_text = `Tổng số: ${result.total_rows} | Thành công đã xác nhận: ${result.success_count} | Bỏ qua / lỗi: ${result.failed_count}${confirmed < validRows.length ? ' | Chưa xác nhận: ' + (validRows.length - confirmed) : ''}`
+      setSummaryData(result); setStep('SUMMARY'); setLoading(false); importing.current = false
     }
   }
 
@@ -194,7 +227,8 @@ export default function ImportUserModal({
   return (
     <div className="modal-overlay">
       <div
-        className="user-modal"
+        className="user-modal import-user-modal"
+        role="dialog" aria-modal="true" aria-labelledby="import-user-title"
         style={{
           maxWidth: step === 'PREVIEW' ? '920px' : '650px',
           transition: 'max-width 0.2s ease',
@@ -204,7 +238,7 @@ export default function ImportUserModal({
         {/* Header */}
         <div className="modal-header">
           <div>
-            <h2>Nhập người dùng từ Excel</h2>
+            <h2 id="import-user-title">Nhập người dùng từ Excel</h2>
             <p>
               {step === 'SELECT_FILE' && 'Tải lên tệp Excel chứa danh sách người dùng để tạo tài khoản hàng loạt.'}
               {step === 'PREVIEW' && 'Xem trước và kiểm tra tính hợp lệ của từng dòng trước khi nhập.'}
@@ -240,7 +274,7 @@ export default function ImportUserModal({
             }}
           >
             <span style={{ fontSize: '18px' }}>⚠️</span>
-            <span>{error}</span>
+            <span role="alert">{error}</span>
           </div>
         )}
 
@@ -359,7 +393,8 @@ export default function ImportUserModal({
                 <li>Các cột bắt buộc: <strong>HoTen</strong>, <strong>Email</strong>, <strong>VaiTro</strong>.</li>
                 <li>Cột <strong>SoDienThoai</strong> có thể để trống.</li>
                 <li>Vai trò hỗ trợ: <em>Học viên, Giảng viên, Quản trị viên, Quản lý đào tạo,...</em></li>
-                <li>Hệ thống sẽ kiểm tra toàn bộ dữ liệu trước khi bạn xác nhận nhập.</li>
+                <li>Tối đa 5.000 dòng và 10 MB mỗi tệp. Với dữ liệu lớn hơn, chia thành nhiều tệp.</li>
+                <li>Hệ thống kiểm tra dữ liệu trước khi nhập, sau đó xử lý từng lô 100 tài khoản và hiển thị tiến độ.</li>
               </ul>
             </div>
 
@@ -474,6 +509,14 @@ export default function ImportUserModal({
               </div>
             )}
 
+            <div className="import-filters">
+              <div className="import-tabs" role="group" aria-label="Phân loại dữ liệu">
+                {([['all', 'Tất cả', previewData.total_rows], ['valid', 'Hợp lệ', previewData.valid_count], ['invalid', 'Có lỗi', previewData.invalid_count]] as const).map(([value, label, count]) => <button key={value} type="button" aria-pressed={category === value} onClick={() => { setCategory(value); setPage(1) }}>{label} ({count})</button>)}
+              </div>
+              <div className="import-search"><label>Tìm họ tên hoặc email<input value={search} onChange={event => { setSearch(event.target.value); setPage(1) }} /></label><div><label htmlFor="import-role-filter">Phân loại theo vai trò</label><ChoiceSelect id="import-role-filter" value={roleFilter} onChange={event => { setRoleFilter(event.target.value); setPage(1) }}><option value="">Tất cả vai trò</option>{[...new Set(previewData.rows.map(row => row.role_name))].sort().map(role => <option key={role} value={role}>{role}</option>)}</ChoiceSelect></div></div>
+              <p>Bộ lọc chỉ dùng để xem trước. Xác nhận sẽ nhập toàn bộ {previewData.valid_count} dòng hợp lệ trong tệp.</p>
+            </div>
+            {loading && <div className="import-progress" role="status"><progress max={previewData.valid_count} value={progress} /><span>Đã xử lý {progress}/{previewData.valid_count} dòng hợp lệ. Vui lòng giữ cửa sổ này mở.</span></div>}
             {/* Preview Table */}
             <div
               style={{
@@ -505,7 +548,8 @@ export default function ImportUserModal({
                   </tr>
                 </thead>
                 <tbody>
-                  {previewData.rows.map((row) => (
+                  {!visibleRows.length && <tr><td colSpan={7}>Không có dòng phù hợp với bộ lọc.</td></tr>}
+                  {visibleRows.map((row) => (
                     <tr
                       key={row.row_index}
                       style={{
@@ -576,6 +620,7 @@ export default function ImportUserModal({
               </table>
             </div>
 
+            <div className="import-pagination"><span>{filteredRows.length} dòng · Trang {page}/{pageCount} · {pageSize} dòng/trang</span><button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)}>Trang trước</button><button type="button" disabled={page >= pageCount} onClick={() => setPage(page + 1)}>Trang sau</button></div>
             {/* Modal Actions */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <button
@@ -644,12 +689,12 @@ export default function ImportUserModal({
                 padding: '20px 0 10px',
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '8px' }}>🎉</div>
+              <div style={{ fontSize: '48px', marginBottom: '8px' }}>{unconfirmed ? '⚠️' : summaryData.failed_count ? '📋' : '✓'}</div>
               <h3 style={{ margin: '0 0 6px', color: '#1e293b', fontSize: '20px' }}>
                 {summaryData.message}
               </h3>
               <p style={{ margin: 0, color: '#64748b', fontSize: '14px' }}>
-                Dữ liệu tài khoản đã được đồng bộ vào hệ thống.
+                {unconfirmed ? 'Kết quả dưới đây chỉ tính các dòng đã được xác nhận.' : 'Đã xử lý xong tệp. Xem thống kê và các dòng bị bỏ qua bên dưới.'}
               </p>
             </div>
 
@@ -725,13 +770,19 @@ export default function ImportUserModal({
                   Danh sách dòng bị bỏ qua ({summaryData.errors.length}):
                 </strong>
                 <ul style={{ margin: '8px 0 0 18px', padding: 0, color: '#b91c1c', fontSize: '13px' }}>
-                  {summaryData.errors.map((err, idx) => (
+                  {summaryData.errors.slice(0, 100).map((err, idx) => (
                     <li key={idx} style={{ marginBottom: '4px' }}>{err}</li>
                   ))}
                 </ul>
+                {summaryData.errors.length > 100 && <p>Đang hiển thị 100 lỗi đầu tiên. Tải báo cáo để xem toàn bộ.</p>}
               </div>
             )}
 
+            {unconfirmed > 0 && <p role="status">Có {unconfirmed} dòng chưa xác nhận kết quả. Kiểm tra lại tệp để loại các email đã được nhập và tiếp tục với phần còn lại.</p>}
+            <div className="import-report-actions"><button type="button" onClick={() => {
+              const url = URL.createObjectURL(new Blob([summaryData.summary_text + '\n' + summaryData.errors.join('\n')], { type: 'text/plain;charset=utf-8' }))
+              const link = document.createElement('a'); link.href = url; link.download = 'ket-qua-nhap-nguoi-dung.txt'; link.click(); URL.revokeObjectURL(url)
+            }}>Tải báo cáo kết quả</button>{unconfirmed > 0 && <button type="button" onClick={() => { setStep('SELECT_FILE'); setError('') }}>Kiểm tra lại tệp</button>}</div>
             {/* Final Action */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
               <button

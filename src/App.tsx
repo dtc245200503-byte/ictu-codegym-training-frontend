@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
 } from 'react'
 
@@ -20,6 +21,7 @@ import LoginPage from './components/LoginPage'
 import ConsultationPage from './components/ConsultationPage'
 import LeadPage from './components/LeadPage'
 import ClassPage from './components/ClassPage'
+import { canViewClasses } from './utils/classAccess'
 import PermissionPage from './components/PermissionPage'
 import ProfilePage from './components/ProfilePage'
 import TrainingProgramPage from './components/TrainingProgramPage'
@@ -49,6 +51,7 @@ type ToastType = 'success' | 'warning'
 
 
 interface ToastState {
+  id: number
   message: string
   type: ToastType
 }
@@ -317,12 +320,9 @@ function AuthenticatedApp({
         <Route
           path="/classes"
           element={
-            <ProtectedPage
-              user={user}
-              permission="CLASS_MANAGE"
-            >
-              <ClassPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')} />
-            </ProtectedPage>
+            canViewClasses(user)
+              ? <ClassPage user={user} onSuccess={onShowSuccess} onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')} />
+              : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Bạn không có quyền xem lớp học." />
           }
         />
 
@@ -421,6 +421,8 @@ function App() {
       null,
     )
 
+  const toastSequence = useRef(0)
+
 
   const closeToast = useCallback(
     () => {
@@ -435,6 +437,7 @@ function App() {
     type: ToastType,
   ) => {
     setToast({
+      id: ++toastSequence.current,
       message,
       type,
     })
@@ -621,6 +624,11 @@ function App() {
       resetToken,
       password,
     )
+    clearSession()
+    sessionStorage.removeItem('return_path')
+    setResetToken(null)
+    window.history.replaceState({}, '', '/')
+    showToast('Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.', 'success')
   }
 
 
@@ -672,6 +680,7 @@ function App() {
 
   const toastElement = toast ? (
     <Toast
+      key={toast.id}
       message={toast.message}
       type={toast.type}
       onClose={closeToast}

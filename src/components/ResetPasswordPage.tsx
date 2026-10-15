@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import AuthShell from './AuthShell'
 
 
 interface ResetPasswordPageProps {
@@ -86,7 +87,7 @@ function ResetPasswordPage({
 
 
   return (
-    <div className="login-page">
+    <AuthShell>
       <div className="login-card">
         <h1>Đặt lại mật khẩu</h1>
 
@@ -132,13 +133,13 @@ function ResetPasswordPage({
           </div>
 
           {error && (
-            <p className="login-error">
+            <p className="login-error" role="alert">
               {error}
             </p>
           )}
 
           {message && (
-            <p className="forgot-success">
+            <p className="forgot-success" role="status">
               {message}
             </p>
           )}
@@ -162,7 +163,7 @@ function ResetPasswordPage({
           </button>
         </form>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 

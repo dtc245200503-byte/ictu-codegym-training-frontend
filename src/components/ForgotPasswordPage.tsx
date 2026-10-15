@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import AuthShell from './AuthShell'
 
 
 interface ForgotPasswordPageProps {
@@ -28,10 +29,10 @@ function ForgotPasswordPage({
     setLoading(true)
 
     try {
-      await onSubmit(email)
+      await onSubmit(email.trim())
 
       setMessage(
-        'Nếu email tồn tại trong hệ thống, liên kết đặt lại mật khẩu sẽ được gửi đến email của bạn.',
+        'Đã gửi liên kết đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư.',
       )
     } catch (err) {
       if (err instanceof Error) {
@@ -46,7 +47,7 @@ function ForgotPasswordPage({
 
 
   return (
-    <div className="login-page">
+    <AuthShell>
       <div className="login-card">
         <h1>Quên mật khẩu</h1>
 
@@ -73,13 +74,13 @@ function ForgotPasswordPage({
           </div>
 
           {message && (
-            <p className="forgot-success">
+            <p className="forgot-success" role="status">
               {message}
             </p>
           )}
 
           {error && (
-            <p className="login-error">
+            <p className="login-error" role="alert">
               {error}
             </p>
           )}
@@ -103,7 +104,7 @@ function ForgotPasswordPage({
           </button>
         </form>
       </div>
-    </div>
+    </AuthShell>
   )
 }
 

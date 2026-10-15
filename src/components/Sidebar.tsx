@@ -1,4 +1,6 @@
 import {
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react'
@@ -6,7 +8,9 @@ import {
 import { NavLink } from 'react-router-dom'
 
 import { menuItems } from '../data/menuItems'
+import BrandLockup from './BrandLockup'
 import type { CurrentUser } from '../types/auth'
+import { canViewClasses } from '../utils/classAccess'
 
 
 interface SidebarProps {
@@ -14,6 +18,9 @@ interface SidebarProps {
   onLogout: () => void
   mobileOpen: boolean
   onMobileClose: () => void
+  collapsed: boolean
+  isMobile: boolean
+  onToggle: () => void
 }
 
 
@@ -145,21 +152,52 @@ function CloseIcon() {
   )
 }
 
+const navigationGroups = [
+  { title: 'Tổng quan', paths: ['/'] },
+  { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/grades', '/attendance', '/tuition'] },
+  { title: 'Vận hành', paths: ['/leads', '/users', '/roles'] },
+  { title: 'Cá nhân', paths: ['/profile'] },
+]
+
 
 function Sidebar({
   user,
   onLogout,
   mobileOpen,
   onMobileClose,
+  collapsed,
+  isMobile,
+  onToggle,
 }: SidebarProps) {
   const [
     showLogoutConfirm,
     setShowLogoutConfirm,
   ] = useState(false)
+  const logoutDialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!showLogoutConfirm) return
+    const dialog = logoutDialogRef.current
+    const previousFocus = document.activeElement as HTMLElement | null
+    dialog?.querySelector<HTMLButtonElement>('.logout-cancel-button')?.focus()
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); setShowLogoutConfirm(false) }
+      if (event.key !== 'Tab') return
+      const buttons = [...(dialog?.querySelectorAll<HTMLButtonElement>('button') || [])]
+      if (event.shiftKey && document.activeElement === buttons[0]) { event.preventDefault(); buttons.at(-1)?.focus() }
+      if (!event.shiftKey && document.activeElement === buttons.at(-1)) { event.preventDefault(); buttons[0]?.focus() }
+    }
+    document.addEventListener('keydown', keyboard)
+    return () => {
+      document.removeEventListener('keydown', keyboard)
+      if (previousFocus?.isConnected && !previousFocus.closest('[inert]')) previousFocus.focus()
+    }
+  }, [showLogoutConfirm])
 
 
   const visibleMenuItems = menuItems.filter(
     (item) => {
+      if (item.path === '/classes') return canViewClasses(user)
       if (!item.permission) {
         return true
       }
@@ -181,6 +219,9 @@ function Sidebar({
   return (
     <>
       <aside
+        id="app-sidebar"
+        aria-label="Menu chính"
+        inert={isMobile && !mobileOpen}
         className={
           mobileOpen
             ? 'sidebar mobile-open'
@@ -188,47 +229,38 @@ function Sidebar({
         }
       >
         <div className="sidebar-header">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M2 10l10-5 10 5-10 5L2 10z" />
-                <path d="M6 12v5c3 2 9 2 12 0v-5" />
-              </svg>
-            </div>
-
-            <div>
-              <strong>
-                EDUCATE
-              </strong>
-
-              <span>
-                Quản lý đào tạo
-              </span>
-            </div>
+          <LinkMark />
+          <div className="sidebar-partnership">
+            <BrandLockup compact />
+            <p>TRAINING MANAGEMENT</p>
           </div>
 
           <button
             type="button"
-            className="mobile-sidebar-close"
-            aria-label="Đóng menu điều hướng"
-            onClick={onMobileClose}
+            className="sidebar-toggle"
+            aria-label={isMobile ? 'Đóng menu điều hướng' : collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            aria-expanded={isMobile ? mobileOpen : !collapsed}
+            aria-controls="app-sidebar"
+            onClick={isMobile ? onMobileClose : onToggle}
           >
-            <CloseIcon />
+            {isMobile ? <CloseIcon /> : <svg viewBox="0 0 24 24" aria-hidden="true"><path d={collapsed ? 'm9 5 7 7-7 7' : 'm15 5-7 7 7 7'} /></svg>}
           </button>
         </div>
 
 
-        <nav className="sidebar-menu">
-          <span className="sidebar-section-title">
-            ĐIỀU HƯỚNG CHÍNH
-          </span>
-
-          {visibleMenuItems.map((item) => (
+        <nav className="sidebar-menu" aria-label="Chức năng hệ thống">
+          {navigationGroups.map(group => {
+            const groupItems = group.paths.flatMap(path => visibleMenuItems.filter(item => item.path === path))
+            return groupItems.length > 0 && <div className="sidebar-group" key={group.title}>
+              <span className="sidebar-section-title">{group.title}</span>
+              {groupItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === '/'}
               onClick={onMobileClose}
+              title={collapsed && !isMobile ? item.name : undefined}
+              aria-label={item.name}
               className={({ isActive }) =>
                 isActive
                   ? 'menu-item active'
@@ -247,7 +279,7 @@ function Sidebar({
                 ›
               </span>
             </NavLink>
-          ))}
+          ))}</div>})}
 
 
           <div className="sidebar-menu-divider" />
@@ -255,6 +287,8 @@ function Sidebar({
 
           <NavLink
             to="/change-password"
+            title={collapsed && !isMobile ? 'Đổi mật khẩu' : undefined}
+            aria-label="Đổi mật khẩu"
             onClick={onMobileClose}
             className={({ isActive }) =>
               isActive
@@ -279,6 +313,8 @@ function Sidebar({
           <button
             type="button"
             className="menu-item sidebar-logout-menu"
+            title={collapsed && !isMobile ? 'Đăng xuất' : undefined}
+            aria-label="Đăng xuất"
             onClick={() => {
               onMobileClose()
               setShowLogoutConfirm(true)
@@ -293,6 +329,10 @@ function Sidebar({
             </span>
           </button>
         </nav>
+        <div className="sidebar-partnership-note">
+          <span className="sidebar-note-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m3 8 9-5 9 5-9 5-9-5Zm4 3v6c3 3 7 3 10 0v-6M21 8v7" /></svg></span>
+          <div><p>Cùng kiến tạo.<br /><strong>Cùng tiến xa.</strong></p><small>ICTU × CodeGym Việt Nam</small></div>
+        </div>
       </aside>
 
 
@@ -309,6 +349,7 @@ function Sidebar({
           }}
         >
           <div
+            ref={logoutDialogRef}
             className="logout-confirm-modal"
             role="dialog"
             aria-modal="true"
@@ -355,3 +396,7 @@ function Sidebar({
 
 
 export default Sidebar
+
+function LinkMark() {
+  return <span className="sidebar-brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="m2 8 10-5 10 5-10 5L2 8Zm4 3v6c4 3 8 3 12 0v-6M22 8v8" /></svg></span>
+}

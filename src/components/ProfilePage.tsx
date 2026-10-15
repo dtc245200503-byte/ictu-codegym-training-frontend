@@ -4,6 +4,7 @@ import type { CurrentUser } from '../types/auth'
 import { getProfile, ProfileSessionError, updateProfile } from '../services/profileService'
 import './ProfilePage.css'
 import AvatarEditor from './AvatarEditor'
+import UserRoleModal from './UserRoleModal'
 
 interface ProfilePageProps {
   onUserUpdated: (user: CurrentUser) => void
@@ -13,7 +14,7 @@ interface ProfilePageProps {
 
 const roleNames: Record<string, string> = {
   ADMIN: 'Quản trị viên', MANAGER: 'Quản lý đào tạo', TRAINING_MANAGER: 'Quản lý đào tạo',
-  INSTRUCTOR: 'Giảng viên', STUDENT: 'Học viên', ACCOUNTANT: 'Kế toán',
+  INSTRUCTOR: 'Giảng viên', TEACHER: 'Giảng viên', ASSISTANT: 'Trợ giảng', TA: 'Trợ giảng', STUDENT: 'Học viên', ACCOUNTANT: 'Kế toán',
   ADMISSIONS: 'Tuyển sinh', ACADEMIC_AFFAIRS: 'Giáo vụ', MANAGEMENT: 'Ban quản lý',
 }
 
@@ -31,7 +32,7 @@ function toForm(user: CurrentUser) {
 export default function ProfilePage({ onUserUpdated, onSuccess, onSessionExpired }: ProfilePageProps) {
   const [profile, setProfile] = useState<CurrentUser | null>(null)
   const [form, setForm] = useState(emptyForm)
-  const [editing, setEditing] = useState(false)
+  const [editingRoles, setEditingRoles] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -87,7 +88,6 @@ export default function ProfilePage({ onUserUpdated, onSuccess, onSessionExpired
       })
       setProfile(user)
       setForm(toForm(user))
-      setEditing(false)
       onUserUpdated(user)
       onSuccess('Cập nhật hồ sơ cá nhân thành công.')
     } catch (err) {
@@ -114,25 +114,23 @@ export default function ProfilePage({ onUserUpdated, onSuccess, onSessionExpired
             <div className="profile-fields">
               <div className="profile-field">
                 <label htmlFor="profile-name">Họ và tên <span aria-label="bắt buộc">*</span></label>
-                <input id="profile-name" autoComplete="name" value={form.full_name} readOnly={!editing}
+                <input id="profile-name" autoComplete="name" value={form.full_name}
                   disabled={saving} maxLength={100} required
                   onChange={(event) => setForm({ ...form, full_name: event.target.value })} />
               </div>
               <div className="profile-field">
                 <label htmlFor="profile-phone">Số điện thoại</label>
                 <input id="profile-phone" type="tel" autoComplete="tel" value={form.phone}
-                  readOnly={!editing} disabled={saving} maxLength={20}
+                  disabled={saving} maxLength={20}
                   aria-describedby="profile-phone-hint"
                   onChange={(event) => setForm({ ...form, phone: event.target.value })} />
                 <small id="profile-phone-hint">Ví dụ: 0912345678 hoặc +84912345678.</small>
               </div>
               <div className="profile-field">
                 <label htmlFor="profile-birthday">Ngày sinh</label>
-                {editing ? <input id="profile-birthday" type="date" autoComplete="bday"
+                <input id="profile-birthday" type="date" autoComplete="bday"
                   value={form.date_of_birth} max={today} disabled={saving}
                   onChange={(event) => setForm({ ...form, date_of_birth: event.target.value })} />
-                  : <input id="profile-birthday" readOnly value={form.date_of_birth
-                    ? form.date_of_birth.split('-').reverse().join('/') : 'Chưa cập nhật'} />}
               </div>
               <div className="profile-field">
                 <label htmlFor="profile-email">Email</label>
@@ -142,7 +140,7 @@ export default function ProfilePage({ onUserUpdated, onSuccess, onSessionExpired
               <div className="profile-field profile-field-wide">
                 <label htmlFor="profile-address">Địa chỉ</label>
                 <textarea id="profile-address" autoComplete="street-address" rows={3}
-                  value={form.address} readOnly={!editing} disabled={saving} maxLength={255}
+                  value={form.address} disabled={saving} maxLength={255}
                   onChange={(event) => setForm({ ...form, address: event.target.value })} />
               </div>
               <div className="profile-field profile-field-wide">
@@ -150,23 +148,27 @@ export default function ProfilePage({ onUserUpdated, onSuccess, onSessionExpired
                 <input id="profile-roles" readOnly value={profile.roles
                   .map((role) => roleNames[role] || 'Vai trò khác').join(', ') || 'Chưa được gán vai trò'}
                   aria-describedby="profile-locked-hint" />
-                <small id="profile-locked-hint">Email và vai trò do trung tâm quản lý. Bạn không thể tự thay đổi.</small>
+                <small id="profile-locked-hint">Email do trung tâm quản lý. {profile.roles.includes('ADMIN') && profile.permissions.includes('ROLE_MANAGE') ? 'Bạn có thể chọn các vai trò bổ sung cho tài khoản.' : 'Chỉ quản trị viên được thay đổi vai trò trong hồ sơ cá nhân.'}</small>
+                {profile.roles.includes('ADMIN') && profile.permissions.includes('ROLE_MANAGE') && <button type="button" className="profile-cancel" disabled={saving} onClick={() => setEditingRoles(true)}>Chọn vai trò</button>}
               </div>
             </div>
             {error && <p className="profile-error" role="alert">{error}</p>}
             <div className="profile-actions">
-              {editing ? <>
-                <button type="button" className="profile-cancel" disabled={saving} onClick={() => {
-                  setForm(toForm(profile)); setEditing(false); setError('')
-                }}>Hủy</button>
-                <button type="submit" className="profile-primary" disabled={saving}>
-                  {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
-              </> : <button type="button" className="profile-primary" onClick={() => {
-                setEditing(true); setError('')
-              }}>Chỉnh sửa hồ sơ</button>}
+              <button type="button" className="profile-cancel" disabled={saving} onClick={() => {
+                setForm(toForm(profile)); setError('')
+              }}>Hoàn tác</button>
+              <button type="submit" className="profile-primary" disabled={saving}>
+                {saving ? 'Đang lưu...' : 'Lưu hồ sơ'}
+              </button>
             </div>
           </form>
+          {editingRoles && <UserRoleModal user={profile} currentUser={profile} onClose={() => setEditingRoles(false)} onUpdated={() => {
+            setEditingRoles(false)
+            void getProfile().then(user => { setProfile(user); onUserUpdated(user); onSuccess('Cập nhật vai trò thành công.') }).catch(err => {
+              if (err instanceof ProfileSessionError) onSessionExpired()
+              setError('Vai trò đã được lưu nhưng chưa tải lại được hồ sơ. Vui lòng tải lại trang.')
+            })
+          }} />}
           </>
         ) : <>
           <p className="profile-error" role="alert">{error}</p>
