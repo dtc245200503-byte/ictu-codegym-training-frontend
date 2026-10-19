@@ -1,0 +1,44 @@
+.attendance-summary-page { max-width: 1440px; min-width: 0; margin: 0 auto; color: #263b52; }
+.attendance-summary-page * { box-sizing: border-box; }
+.attendance-summary-page h1 { margin: 6px 0 8px; font-size: 28px; color: #173b68; }
+.attendance-summary-page h2 { font-size: 20px; overflow-wrap: anywhere; }
+.attendance-summary-page p { line-height: 1.6; }
+.summary-eyebrow { color: #64748b; font-size: 11px; letter-spacing: .08em; font-weight: 700; }
+.attendance-summary-page button { min-height: 44px; border: 1px solid #cbd5e1; background: white; color: #24529a; padding: 10px 14px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
+.attendance-summary-page button:disabled { opacity: .5; cursor: default; }
+.attendance-summary-page :is(button, select, summary, [tabindex]):focus-visible { outline: 3px solid #7eaeff; outline-offset: 2px; }
+.summary-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; gap: 14px; padding: 18px; border: 1px solid #dce5ef; background: white; border-radius: 12px; margin: 22px 0 16px; }
+.summary-filters label { display: grid; gap: 7px; font-size: 14px; }
+.summary-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; color: inherit; background: white; }
+.summary-method { border: 1px solid #dce5ef; border-radius: 12px; padding: 14px; background: #f5f8fc; }
+.summary-method summary { cursor: pointer; font-weight: 600; min-height: 24px; }
+.summary-method p { font-size: 13px; }
+.summary-legend { list-style: none; padding: 0; display: flex; gap: 12px 20px; flex-wrap: wrap; }
+.summary-legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.summary-heading { margin-top: 24px; }
+.summary-heading p, .summary-scroll-hint { font-size: 13px; color: #52647b; }
+.summary-empty, .summary-error { padding: 16px; border-radius: 10px; overflow-wrap: anywhere; }
+.summary-empty { border: 1px dashed #cbd5e1; background: white; }
+.summary-error { background: #fff0ed; color: #a5362a; border: 1px solid #f1c1b9; }
+.summary-table-scroll { width: 100%; max-width: 100%; overflow: auto; max-height: 70vh; border: 1px solid #dce5ef; border-radius: 12px; background: white; }
+.summary-matrix { border-collapse: separate; border-spacing: 0; width: max-content; min-width: 100%; font-size: 13px; }
+.summary-matrix caption { text-align: left; padding: 12px; color: #52647b; }
+.summary-matrix th, .summary-matrix td { min-width: 112px; max-width: 160px; padding: 12px 10px; text-align: center; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; overflow-wrap: anywhere; }
+.summary-matrix thead th { position: sticky; top: 0; z-index: 2; background: #eef3fa; }
+.summary-matrix thead th :is(strong, span, small) { display: block; margin: 4px 0; }
+.summary-matrix thead small { font-weight: 400; font-size: 11px; }
+.summary-matrix .summary-student-column { position: sticky; left: 0; z-index: 1; min-width: 175px; width: 175px; max-width: 175px; text-align: left; background: white; box-shadow: 2px 0 3px #172b4d0d; }
+.summary-matrix thead .summary-student-column { z-index: 3; background: #eef3fa; }
+.summary-student-column span, .summary-student-column small, .summary-total small, .summary-rate small { display: block; font-weight: 400; margin-top: 5px; color: #52647b; font-size: 11px; }
+.summary-cell { display: inline-flex; align-items: center; justify-content: center; min-width: 38px; min-height: 34px; padding: 5px 8px; border: 1px solid transparent; border-radius: 7px; font-size: 12px; font-weight: 700; }
+.summary-cell.present { background: #dff5e9; color: #17663d; border-color: #9cd2b5; }
+.summary-cell.late { background: #fff2c9; color: #775109; border-color: #dfc16d; }
+.summary-cell.excused_absence { background: #e6edff; color: #344da4; border-color: #b4c3ef; }
+.summary-cell.unexcused_absence { background: #ffe3de; color: #a33124; border-color: #e5afa7; }
+.summary-cell.unmarked { background: white; color: #57667a; border: 1px dashed #96a5b9; }
+.summary-cell.not_enrolled, .summary-cell.upcoming { background: #f1f4f8; color: #607087; }
+.summary-cell.cancelled { background: #e8eaf0; color: #505b6c; text-decoration: line-through; }
+.summary-rate progress { display: block; width: 90px; height: 7px; margin: 8px auto; accent-color: #3476cf; }
+.summary-rate > strong, .summary-total > strong { font-size: 16px; }
+.summary-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 18px 0; font-size: 13px; }
+@media (max-width: 600px) { .summary-filters { grid-template-columns: minmax(0, 1fr); padding: 14px; } .attendance-summary-page h1 { font-size: 24px; } .summary-matrix .summary-student-column { min-width: 140px; width: 140px; max-width: 140px; } .summary-pagination button { padding: 10px 8px; } }

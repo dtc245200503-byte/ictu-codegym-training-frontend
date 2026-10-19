@@ -1,6 +1,7 @@
 import type { MenuItem } from '../types/auth'
 
 export const menuItems: MenuItem[] = [
+  { name: 'Bảng chuyên cần', path: '/attendance-summary', permission: 'ATTENDANCE_VIEW' },
   {
     name: 'Trang chủ',
     path: '/',

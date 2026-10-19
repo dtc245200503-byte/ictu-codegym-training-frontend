@@ -1,3 +1,5 @@
+import AttendanceSummaryPage from './components/AttendanceSummaryPage'
+import { canViewAttendanceSummary } from './services/attendanceSummaryService'
 import {
   useCallback,
   useEffect,
@@ -357,6 +359,8 @@ function AuthenticatedApp({
             </ProtectedPage>
           }
         />
+
+        <Route path="/attendance-summary" element={<ProtectedPage user={user} permission="ATTENDANCE_VIEW">{canViewAttendanceSummary(user) ? <AttendanceSummaryPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')} /> : <PermissionPage user={user} permission="ATTENDANCE_VIEW" title="Bảng chuyên cần" />}</ProtectedPage>} />
 
         <Route
           path="/attendance"

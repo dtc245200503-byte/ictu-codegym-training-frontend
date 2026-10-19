@@ -1,3 +1,4 @@
+import { canViewAttendanceSummary } from '../services/attendanceSummaryService'
 import {
   useEffect,
   useRef,
@@ -25,6 +26,7 @@ interface SidebarProps {
 
 
 const menuIcons: Record<string, ReactNode> = {
+  '/attendance-summary': <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18M9 15h12M15 9v12" /></svg>,
   '/leads': <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2" /><path d="M20 8v6M17 11h6" /></svg>,
   '/profile': (
     <svg viewBox="0 0 24 24">
@@ -154,7 +156,7 @@ function CloseIcon() {
 
 const navigationGroups = [
   { title: 'Tổng quan', paths: ['/'] },
-  { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/grades', '/attendance', '/tuition'] },
+  { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/grades', '/attendance', '/attendance-summary', '/tuition'] },
   { title: 'Vận hành', paths: ['/leads', '/users', '/roles'] },
   { title: 'Cá nhân', paths: ['/profile'] },
 ]
@@ -197,6 +199,7 @@ function Sidebar({
 
   const visibleMenuItems = menuItems.filter(
     (item) => {
+      if (item.path === '/attendance-summary') return canViewAttendanceSummary(user)
       if (item.path === '/classes') return canViewClasses(user)
       if (!item.permission) {
         return true
