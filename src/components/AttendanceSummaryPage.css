@@ -7,7 +7,8 @@
 .attendance-summary-page button { min-height: 44px; border: 1px solid #cbd5e1; background: white; color: #24529a; padding: 10px 14px; border-radius: 8px; font: inherit; font-size: 14px; cursor: pointer; }
 .attendance-summary-page button:disabled { opacity: .5; cursor: default; }
 .attendance-summary-page :is(button, select, summary, [tabindex]):focus-visible { outline: 3px solid #7eaeff; outline-offset: 2px; }
-.summary-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; align-items: end; gap: 14px; padding: 18px; border: 1px solid #dce5ef; background: white; border-radius: 12px; margin: 22px 0 16px; }
+.summary-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto auto; align-items: end; gap: 14px; padding: 18px; border: 1px solid #dce5ef; background: white; border-radius: 12px; margin: 22px 0 16px; }
+.attendance-summary-page .summary-export { background: #173b68; color: white; border-color: #173b68; }
 .summary-filters label { display: grid; gap: 7px; font-size: 14px; }
 .summary-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; color: inherit; background: white; }
 .summary-method { border: 1px solid #dce5ef; border-radius: 12px; padding: 14px; background: #f5f8fc; }

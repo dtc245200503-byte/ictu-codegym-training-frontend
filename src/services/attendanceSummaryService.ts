@@ -21,13 +21,14 @@ export interface SummaryStudent {
   excused_absences: number; unexcused_absences: number; attendance_rate: number | null
 }
 export interface AttendanceSummary extends SummaryClass {
+  class_code: string; can_export: boolean
   today: string; sort: SummarySort; students: SummaryStudent[]; sessions: SummarySession[]; total: number; page: number; page_size: number
 }
 export class SummaryError extends Error {
   status: number
   constructor(message: string, status: number) { super(message); this.status = status }
 }
-async function request<T>(path: string): Promise<T> {
+async function responseFor(path: string): Promise<Response> {
   let token = localStorage.getItem('access_token')
   const refresh = async () => {
     try { token = (await refreshAccessToken()).access_token }
@@ -38,9 +39,33 @@ async function request<T>(path: string): Promise<T> {
   let response = await send()
   if (response.status === 401) { await refresh(); response = await send() }
   if ([401, 423].includes(response.status)) throw new SummaryError('Phiên đăng nhập không còn hiệu lực.', 401)
-  const data = await response.json()
-  if (!response.ok) throw new SummaryError(typeof data.detail === 'string' ? data.detail : 'Không thể tải bảng chuyên cần. Vui lòng thử lại.', response.status)
-  return data
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new SummaryError(typeof data.detail === 'string' ? data.detail : 'Không thể tải bảng chuyên cần. Vui lòng thử lại.', response.status)
+  }
+  return response
 }
+async function request<T>(path: string): Promise<T> { return (await responseFor(path)).json() }
 export const getSummaryClasses = () => request<{ items: SummaryClass[] }>('/classes')
 export const getAttendanceSummary = (classId: string, sort: SummarySort, page: number) => request<AttendanceSummary>(`/classes/${encodeURIComponent(classId)}?${new URLSearchParams({ sort, page: String(page), page_size: '50' })}`)
+
+export async function downloadAttendanceSummary(classId: string, sort: SummarySort) {
+  const response = await responseFor(`/classes/${encodeURIComponent(classId)}/export?${new URLSearchParams({ sort })}`)
+  const disposition = response.headers.get('Content-Disposition') || ''
+  const encoded = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1]
+  const plain = /filename="([^"]+)"/i.exec(disposition)?.[1]
+  let filename = plain || 'Chuyen-can.xlsx'
+  if (encoded) { try { filename = decodeURIComponent(encoded) } catch { /* Use ASCII fallback. */ } }
+  const blob = await response.blob()
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename.replace(/[\\/]/g, '_')
+  document.body.appendChild(link)
+  try { link.click() }
+  finally {
+    link.remove()
+    // Allow the browser to start consuming the blob before releasing it.
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+}

@@ -26,9 +26,10 @@ const source = file => path.resolve(__dirname, '../src', file)
 const service = source('services/attendanceSummaryService.ts')
 const realService = require(service)
 const { SummaryError, canViewAttendanceSummary } = realService
-let classes, load, calls, expired, root
+let classes, load, calls, expired, root, download, downloads
 require.cache[service] = { id: service, filename: service, loaded: true, exports: {
   ...realService, getSummaryClasses: () => classes(), getAttendanceSummary: (...args) => { calls.push(args); return load(...args) },
+  downloadAttendanceSummary: (...args) => { downloads.push(args); return download(...args) },
 } }
 const Page = require(source('components/AttendanceSummaryPage.tsx')).default
 const initial = () => ({ class_id: 1, class_name: 'Lớp Python', today: '2026-10-18', sort: 'name', total: 2, page: 1, page_size: 50,
@@ -40,8 +41,51 @@ const all = selector => [...document.querySelectorAll(selector)]
 const button = text => all('button').find(node => node.textContent.includes(text))
 beforeEach(() => {
   calls = []; expired = 0
+  downloads = []; download = async () => {}
   classes = async () => ({ items: [{ class_id: 1, class_name: 'Lớp Python' }, { class_id: 2, class_name: 'Lớp Java' }] })
   load = async (id, sort, page) => ({ ...initial(), class_id: Number(id), sort, page })
+})
+
+test('manager exports entire class with selected order and blocks duplicate downloads', async () => {
+  let finish
+  load = async (id, sort, page) => ({ ...initial(), can_export: true, total: 80, sort, page })
+  download = () => new Promise(resolve => { finish = resolve })
+  await mount()
+  await select('Sắp xếp', 'rate_asc')
+  await click(button('Trang sau'))
+  await click(button('Xuất Excel'))
+  assert.deepEqual(downloads, [['1', 'rate_asc']])
+  assert.equal(button('Đang xuất Excel').disabled, true)
+  await click(button('Đang xuất Excel'))
+  assert.equal(downloads.length, 1)
+  await act(async () => finish())
+  assert.match(q('[role=status]').textContent, /toàn bộ lớp/)
+  assert.equal(button('Xuất Excel').disabled, false)
+})
+
+test('export failure preserves matrix and permits retry, expired auth logs out', async () => {
+  load = async () => ({ ...initial(), can_export: true })
+  download = async () => { throw new Error('Xuất tệp thất bại') }
+  await mount(); await click(button('Xuất Excel'))
+  assert.ok(q('table'))
+  assert.match(q('[role=alert]').textContent, /Xuất tệp thất bại/)
+  download = async () => { throw new SummaryError('Phiên đã hết hạn.', 401) }
+  await click(button('Xuất Excel')); assert.equal(expired, 1)
+  download = async () => {}
+  await click(button('Xuất Excel')); assert.equal(q('[role=alert]'), null)
+})
+
+test('export is unavailable without server capability or while a new class loads', async () => {
+  await mount()
+  assert.equal(button('Xuất Excel'), undefined)
+  load = async () => ({ ...initial(), can_export: true })
+  await click(button('Làm mới')); assert.ok(button('Xuất Excel'))
+  let finish
+  load = () => new Promise(resolve => { finish = resolve })
+  await select('Lớp học', '2')
+  assert.equal(button('Xuất Excel'), undefined)
+  await act(async () => finish({ ...initial(), class_id: 2, can_export: false }))
+  assert.equal(button('Xuất Excel'), undefined)
 })
 afterEach(async () => { if (root) await act(async () => root.unmount()); root = null })
 async function mount(path = '/attendance-summary?class_id=1') { root = createRoot(q('#root')); await act(async () => root.render(h(MemoryRouter, { initialEntries: [path] }, h(Page, { onSessionExpired: () => expired++ })))) }

@@ -1,7 +1,7 @@
 import AttendanceRiskBadges from './AttendanceRiskBadges'
-import { useEffect, useEffectEvent, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { getAttendanceSummary, getSummaryClasses, SummaryError, summaryStates } from '../services/attendanceSummaryService'
+import { downloadAttendanceSummary, getAttendanceSummary, getSummaryClasses, SummaryError, summaryStates } from '../services/attendanceSummaryService'
 import type { AttendanceSummary, SummaryClass, SummarySort } from '../services/attendanceSummaryService'
 import './AttendanceSummaryPage.css'
 
@@ -13,6 +13,9 @@ export default function AttendanceSummaryPage({ onSessionExpired }: { onSessionE
   const [classes, setClasses] = useState<SummaryClass[]>(), [optionsError, setOptionsError] = useState(''), [optionsRetry, setOptionsRetry] = useState(0)
   const [sort, setSort] = useState<SummarySort>('name'), [page, setPage] = useState(1), [reload, setReload] = useState(0)
   const [result, setResult] = useState<{ key: string; data?: AttendanceSummary; error?: string }>()
+  const exportingRef = useRef(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportResult, setExportResult] = useState<{ classId: string; error?: string; success?: string }>()
   const key = JSON.stringify([classId, sort, page, reload])
   const explain = useEffectEvent((error: unknown) => {
     if (error instanceof SummaryError && error.status === 401) onSessionExpired()
@@ -34,13 +37,28 @@ export default function AttendanceSummaryPage({ onSessionExpired }: { onSessionE
   const loading = !!classId && result?.key !== key
   const data = !loading && classId ? result?.data : undefined
   const error = !loading && classId ? result?.error : undefined
+  const exportExcel = async () => {
+    if (!data?.can_export || exportingRef.current) return
+    exportingRef.current = true
+    setExporting(true); setExportResult(undefined)
+    try {
+      await downloadAttendanceSummary(classId, sort)
+      setExportResult({ classId, success: 'Đã tạo tệp Excel cho toàn bộ lớp và bắt đầu tải xuống.' })
+    } catch (error: unknown) {
+      if (error instanceof SummaryError && error.status === 401) onSessionExpired()
+      setExportResult({ classId, error: error instanceof Error && !(error instanceof TypeError) ? error.message : 'Không thể xuất Excel. Vui lòng thử lại.' })
+    } finally { exportingRef.current = false; setExporting(false) }
+  }
   return <section className="attendance-summary-page" aria-labelledby="attendance-summary-title">
     <header><span className="summary-eyebrow">THEO DÕI LỚP HỌC</span><h1 id="attendance-summary-title">Bảng chuyên cần</h1><p>Xem quá trình tham gia từng buổi và đưa học viên có tỷ lệ chuyên cần thấp lên đầu danh sách.</p></header>
     <div className="summary-filters">
       <label>Lớp học<select aria-label="Lớp học" value={classId} disabled={!classes || !!optionsError} onChange={event => { setParams(event.target.value ? { class_id: event.target.value } : {}); setPage(1) }}><option value="">Chọn lớp học</option>{classes?.map(item => <option key={item.class_id} value={item.class_id}>{item.class_name}</option>)}{classId && !classes?.some(item => String(item.class_id) === classId) && <option value={classId}>Lớp #{classId}</option>}</select></label>
       <label>Sắp xếp<select aria-label="Sắp xếp" value={sort} onChange={event => { setSort(event.target.value as SummarySort); setPage(1) }}><option value="name">Tên học viên</option><option value="rate_asc">Tỷ lệ chuyên cần tăng dần</option></select></label>
       <button type="button" disabled={!classId || loading} onClick={() => setReload(value => value + 1)}>Làm mới</button>
+      {data?.can_export && <button type="button" className="summary-export" disabled={exporting} onClick={exportExcel}>{exporting ? 'Đang xuất Excel…' : 'Xuất Excel'}</button>}
     </div>
+    {exportResult?.classId === classId && exportResult.error && <p role="alert" className="summary-error">{exportResult.error}</p>}
+    {exportResult?.classId === classId && exportResult.success && <p role="status">{exportResult.success}</p>}
     {optionsError && <p role="alert" className="summary-error">{optionsError} <button onClick={() => setOptionsRetry(value => value + 1)}>Tải lại lớp</button></p>}
     {!classes && !optionsError && <p role="status">Đang tải danh sách lớp…</p>}
     {classes?.length === 0 && !optionsError && <p className="summary-empty">Bạn chưa có lớp được phép xem.</p>}
