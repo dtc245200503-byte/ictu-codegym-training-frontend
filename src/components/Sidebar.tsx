@@ -1,3 +1,4 @@
+import { canManageStudentProfiles } from '../utils/studentAccess'
 import { canViewAttendanceSummary } from '../services/attendanceSummaryService'
 import {
   useEffect,
@@ -156,9 +157,9 @@ function CloseIcon() {
 
 const navigationGroups = [
   { title: 'Tổng quan', paths: ['/'] },
-  { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/grades', '/attendance', '/attendance-summary', '/tuition'] },
+  { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/students', '/grades', '/attendance', '/attendance-summary', '/tuition'] },
   { title: 'Vận hành', paths: ['/leads', '/users', '/roles'] },
-  { title: 'Cá nhân', paths: ['/profile'] },
+  { title: 'Cá nhân', paths: ['/notifications', '/profile'] },
 ]
 
 
@@ -200,6 +201,7 @@ function Sidebar({
   const visibleMenuItems = menuItems.filter(
     (item) => {
       if (item.path === '/attendance-summary') return canViewAttendanceSummary(user)
+      if (item.path === '/students') return canManageStudentProfiles(user)
       if (item.path === '/classes') return canViewClasses(user)
       if (!item.permission) {
         return true

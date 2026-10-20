@@ -1,3 +1,4 @@
+import type { AttendanceRisk } from './attendanceRiskService'
 import { refreshAccessToken } from './authService'
 
 const API_URL = `${window.location.protocol}//${window.location.hostname}:8000/api/classes`
@@ -21,6 +22,7 @@ export interface ClassSubjectDetail {
 }
 
 export interface TrainingClass {
+  attendance_risks?: AttendanceRisk[]
   class_id: number
   class_name: string
   course_id: number | null

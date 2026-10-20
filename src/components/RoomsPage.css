@@ -1,0 +1,26 @@
+.rooms-page { max-width: 1100px; margin: 0 auto; display: grid; gap: 18px; min-width: 0; color: #183b43; }
+.rooms-page h1, .rooms-page h2, .rooms-page p, .room-picker p { margin: 0; }
+.rooms-page h1 { font-size: 28px; margin: 6px 0; }
+.rooms-page h2 { font-size: 20px; }
+.rooms-page header, .room-list article { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.rooms-page p, .room-picker p { line-height: 1.6; }
+.rooms-page label, .room-picker label { display: grid; gap: 7px; min-width: 0; }
+.rooms-page input:not([type=checkbox]), .rooms-page select, .room-picker select { width: 100%; max-width: 100%; box-sizing: border-box; min-height: 44px; border: 1px solid #bacfc8; border-radius: 8px; padding: 10px; font: inherit; background: #fff; color: #183b43; }
+.rooms-page button { min-height: 44px; padding: 9px 16px; border: 1px solid #bacfc8; border-radius: 9px; background: #fff; color: #155e55; font: inherit; cursor: pointer; }
+.rooms-page button:disabled { opacity: .5; cursor: default; }
+.rooms-page :focus-visible, .room-picker :focus-visible { outline: 3px solid #247b70; outline-offset: 3px; }
+.room-form { display: grid; gap: 16px; padding: 22px; background: #eef7f3; border: 1px solid #bacfc8; border-radius: 14px; }
+.room-form .room-active { display: flex; align-items: center; min-height: 44px; }
+.room-active input { width: 20px; height: 20px; }
+.room-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.room-list { display: grid; gap: 14px; }
+.room-list article { padding: 20px; background: #fff; border: 1px solid #dbe7e2; border-radius: 14px; overflow-wrap: anywhere; }
+.room-list article > div { flex: 1; min-width: 160px; }
+.room-list article p { margin: 6px 0; }
+.room-inactive { color: #805524; }
+.room-error { color: #9b3434; }
+.room-success { color: #155e55; }
+.room-warning { padding: 12px; border: 1px solid #e2bd76; background: #fff6e4; color: #74450d; border-radius: 8px; }
+.room-picker { display: grid; gap: 8px; min-width: 0; }
+.room-picker a { overflow-wrap: anywhere; }
+@media (max-width: 540px) { .rooms-page h1 { font-size: 24px; } .room-form, .room-list article { padding: 14px; } .rooms-page input:not([type=checkbox]), .rooms-page select, .room-picker select { font-size: 16px; } }

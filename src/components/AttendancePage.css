@@ -1,0 +1,98 @@
+.attendance-page { max-width: 1120px; margin: 0 auto; color: #263b52; min-width: 0; padding-bottom: 16px; }
+.attendance-page *, .attendance-page *::before, .attendance-page *::after { box-sizing: border-box; }
+.attendance-page h1 { margin: 6px 0 8px; font-size: 28px; color: #173b68; }
+.attendance-page h2 { font-size: 21px; margin: 8px 0; }
+.attendance-page h3 { margin: 0 0 8px; font-size: 16px; overflow-wrap: anywhere; }
+.attendance-page p { line-height: 1.6; }
+.attendance-page button { min-height: 44px; border: 1px solid #ccd7e4; border-radius: 9px; background: white; color: #334d6b; padding: 10px 15px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.attendance-page button:disabled { opacity: .5; cursor: default; }
+.attendance-page .attendance-primary { background: #245bdc; border-color: #245bdc; color: white; }
+.attendance-page :is(button, input, select, summary):focus-visible { outline: 3px solid #8cb5ff; outline-offset: 2px; }
+.attendance-page input:not([type="radio"]):not([type="checkbox"]), .attendance-page select { display: block; width: 100%; min-width: 0; max-width: 100%; min-height: 44px; margin-top: 7px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #24364d; font: inherit; font-size: 16px; }
+.attendance-page label { min-width: 0; font-size: 13px; font-weight: 600; }
+.attendance-page-header { margin-bottom: 22px; }
+.attendance-page-header p { margin: 0; color: #64748b; }
+.attendance-eyebrow { color: #64748b; letter-spacing: .08em; font-size: 11px; font-weight: 700; }
+.attendance-filters { display: grid; grid-template-columns: minmax(160px, 1fr) minmax(180px, 2fr) auto; align-items: end; gap: 12px; padding: 18px; background: white; border: 1px solid #e0e7ef; border-radius: 12px; }
+.attendance-date-hint { color: #64748b; font-size: 12px; margin: 12px 0 22px; }
+.attendance-page .attendance-list-title { font-size: 15px; margin-bottom: 16px; }
+.attendance-session-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.attendance-session-card { display: flex; flex-direction: column; padding: 20px; background: white; border: 1px solid #dce5ef; border-radius: 12px; min-width: 0; overflow-wrap: anywhere; }
+.attendance-session-card p { color: #53647b; font-size: 14px; margin: 5px 0 12px; }
+.attendance-session-card small { color: #886328; margin: 4px 0 14px; line-height: 1.5; }
+.attendance-session-card button { margin-top: auto; }
+.attendance-session-time { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.attendance-session-time > strong { color: #245bdc; font-size: 20px; }
+.attendance-session-time > span { font-size: 11px; padding: 6px 8px; border-radius: 6px; background: #fff5df; color: #886328; }
+.attendance-session-time > span.is-saved { background: #e8f7ee; color: #1c7550; }
+.attendance-pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 20px 0; font-size: 13px; }
+.attendance-editor-nav { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+.attendance-session-header { padding: 20px; border-radius: 12px; background: white; border: 1px solid #e0e7ef; }
+.attendance-session-header p { margin: 8px 0; overflow-wrap: anywhere; }
+.attendance-session-header small { display: block; color: #64748b; line-height: 1.6; }
+.attendance-warning, .attendance-error, .attendance-success, .attendance-empty { padding: 15px; border-radius: 9px; margin: 16px 0; line-height: 1.6; overflow-wrap: anywhere; }
+.attendance-warning { background: #fff5df; color: #805917; border: 1px solid #eed69b; }
+.attendance-error { background: #fff0ed; color: #a5362a; border: 1px solid #f1c1b9; }
+.attendance-success { background: #eaf8f0; color: #21714b; border: 1px solid #b9e3cd; }
+.attendance-empty { background: white; color: #64748b; border: 1px dashed #cbd5e1; }
+.attendance-quick-actions { display: flex; align-items: center; gap: 16px; margin: 22px 0 16px; }
+.attendance-quick-actions p { color: #64748b; font-size: 13px; margin: 0; }
+.attendance-quick-actions button { flex-shrink: 0; }
+.attendance-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+.attendance-count { font-size: 12px; color: #43526b; background: #e9eef5; padding: 7px 9px; border-radius: 7px; }
+.attendance-count.present { background: #eaf8f0; color: #21714b; }
+.attendance-count.late { background: #fff5df; color: #805917; }
+.attendance-count.excused_absence { background: #edf2ff; color: #4259a6; }
+.attendance-count.unexcused_absence { background: #fff0ed; color: #a5362a; }
+.attendance-search { display: block; max-width: 500px; }
+.attendance-progress { color: #53647b; font-size: 13px; }
+.attendance-students { display: flex; flex-direction: column; gap: 10px; }
+.attendance-student { display: grid; grid-template-columns: minmax(140px, 1fr) minmax(0, 2fr); align-items: center; gap: 16px; background: white; padding: 16px; border: 1px solid #dce5ef; border-radius: 11px; min-width: 0; }
+.attendance-student-name { min-width: 0; }
+.attendance-student-name h3 { margin-bottom: 5px; }
+.attendance-student-name > span { font-size: 12px; color: #64748b; overflow-wrap: anywhere; }
+.attendance-status-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.attendance-page .attendance-status { display: flex; align-items: center; justify-content: flex-start; gap: 7px; min-height: 48px; padding: 9px 8px; margin: 0; border: 1px solid #ccd7e4; border-radius: 8px; background: #fff; font-size: 12px; cursor: pointer; line-height: 1.4; }
+.attendance-status input { flex: 0 0 16px; width: 16px; height: 16px; margin: 0; accent-color: #245bdc; }
+.attendance-status-options:disabled .attendance-status { cursor: default; opacity: .7; }
+.attendance-status.is-selected { box-shadow: inset 0 0 0 1px currentColor; }
+.attendance-status.present.is-selected { background: #eaf8f0; border-color: #28855a; color: #21714b; }
+.attendance-status.late.is-selected { background: #fff5df; border-color: #b98522; color: #805917; }
+.attendance-status.excused_absence.is-selected { background: #edf2ff; border-color: #687dca; color: #4259a6; }
+.attendance-status.unexcused_absence.is-selected { background: #fff0ed; border-color: #cc6050; color: #a5362a; }
+.attendance-save-bar { position: sticky; bottom: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 18px 0; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); background: #fff; border: 1px solid #d8e2ee; border-radius: 12px; box-shadow: 0 -4px 18px #18365712; }
+.attendance-save-bar strong { font-size: 14px; }
+.attendance-save-bar small { display: block; font-size: 11px; color: #64748b; margin-top: 4px; }
+.attendance-save-bar button { flex-shrink: 0; }
+.attendance-history-panel, .attendance-prepare { margin: 20px 0; background: white; border: 1px solid #dce5ef; border-radius: 11px; }
+.attendance-page summary { padding: 16px; cursor: pointer; font-size: 14px; font-weight: 600; }
+.attendance-history, .attendance-prepare-body { padding: 0 18px 18px; }
+.attendance-history ol { padding-left: 20px; }
+.attendance-history li { padding: 12px 0; border-bottom: 1px solid #e4eaf2; overflow-wrap: anywhere; }
+.attendance-history p { margin: 6px 0; }
+.attendance-history small { color: #64748b; line-height: 1.5; }
+.attendance-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.attendance-prepare-body > label, .attendance-prepare-body form > label { display: block; margin-bottom: 14px; }
+.attendance-prepare-body section, .attendance-create-session { margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+.attendance-prepare-body p { font-size: 13px; color: #53647b; }
+.attendance-date-time { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.attendance-candidates { max-height: 240px; overflow-y: auto; margin: 12px 0; }
+.attendance-candidates > label { display: flex; align-items: center; min-height: 48px; gap: 10px; padding: 8px 0; }
+.attendance-candidates input { width: 18px; height: 18px; flex-shrink: 0; }
+.attendance-candidates small { display: block; font-weight: normal; margin-top: 4px; color: #64748b; }
+.attendance-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 950px) { .attendance-status-options { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .attendance-page h1 { font-size: 24px; }
+  .attendance-filters, .attendance-session-list { grid-template-columns: minmax(0, 1fr); }
+  .attendance-filters { padding: 14px; }
+  .attendance-student { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 13px; }
+  .attendance-status-options { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .attendance-page .attendance-status { min-height: 48px; font-size: 12px; }
+  .attendance-quick-actions { flex-direction: column; align-items: stretch; gap: 8px; }
+  .attendance-save-bar { padding: 12px 10px calc(12px + env(safe-area-inset-bottom)); gap: 8px; }
+  .attendance-save-bar button { padding: 10px; font-size: 13px; }
+  .attendance-session-header, .attendance-session-card { padding: 16px; }
+  .attendance-prepare-body, .attendance-history { padding: 0 12px 12px; }
+  .attendance-date-time { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,3 +1,6 @@
+import { Link } from 'react-router-dom'
+import { canManageStudentProfiles } from '../utils/studentAccess'
+import AttendanceRiskBadges from './AttendanceRiskBadges'
 import { Fragment, useEffect, useState } from 'react'
 import ChoiceSelect from './ChoiceSelect'
 import ErrorPage from './ErrorPage'
@@ -43,6 +46,7 @@ export default function ClassPage({ user, onSessionExpired, onSuccess }: { user:
   if (forbidden) return <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Bạn không có quyền xem lớp học." />
   return <section className="program-page" aria-labelledby="class-title">
     <div className="program-header"><div><h1 id="class-title">{canAssign ? 'Lớp học' : 'Lớp của tôi'}</h1><p>{canAssign ? 'Phân công giảng viên chính và trợ giảng phụ trách từng môn trong lớp.' : 'Các lớp bạn được phân công giảng dạy hoặc trợ giảng theo môn học.'}</p></div></div>
+    {canManageStudentProfiles(user) && <Link to="/students">Hồ sơ học viên</Link>}
     <form className="program-filters" onSubmit={event => { event.preventDefault(); prepareLoad(); setFilters({ ...filters, search }); setPage(1); setReload(value => value + 1) }}>
       <div><label htmlFor="class-search">Tìm lớp học</label><input id="class-search" maxLength={100} value={search} placeholder="Tên lớp, chương trình hoặc giảng viên" onChange={event => setSearch(event.target.value)} /></div>
       <div><label htmlFor="class-status">Trạng thái</label><ChoiceSelect id="class-status" value={filters.status} onChange={event => { prepareLoad(); setFilters({ search, status: event.target.value }); setPage(1) }}><option value="">Tất cả trạng thái</option>{Object.entries(statuses).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</ChoiceSelect></div><button type="submit">Tìm kiếm</button>
@@ -52,7 +56,7 @@ export default function ClassPage({ user, onSessionExpired, onSuccess }: { user:
       <caption>{total} lớp học</caption><thead><tr><th>Lớp học</th><th>Chương trình</th><th>Phân công theo môn</th><th>Khai giảng</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
       <tbody>{loading ? <tr><td colSpan={6}>Đang tải lớp học...</td></tr> : !items.length ? <tr><td colSpan={6}>{canAssign ? 'Chưa có lớp phù hợp.' : 'Bạn chưa được phân công vào lớp nào phù hợp với bộ lọc.'}</td></tr> : items.map(item => <Fragment key={item.class_id}>
         <tr data-class-id={item.class_id}>
-          <td className="program-name"><strong>{item.class_name}</strong><small>Mã lớp: {item.class_id}</small></td>
+          <td className="program-name"><strong>{item.class_name}</strong><small>Mã lớp: {item.class_id}</small><AttendanceRiskBadges flags={item.attendance_risks} showStudent /></td>
           <td className="program-name">{item.program_name || 'Chưa chọn chương trình'}<small>{item.program_code}</small></td>
           <td><strong>{item.subjects.filter(subject => subject.instructor_id).length}/{item.subjects.length} môn</strong><small>đã có giảng viên chính</small></td>
           <td>{item.start_date ? item.start_date.split('-').reverse().join('/') : 'Chưa có ngày'}</td>

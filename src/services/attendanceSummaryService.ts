@@ -1,3 +1,4 @@
+import type { AttendanceRisk } from './attendanceRiskService'
 import { refreshAccessToken } from './authService'
 import type { CurrentUser } from '../types/auth'
 
@@ -14,6 +15,7 @@ export type SummarySort = 'name' | 'rate_asc'
 export interface SummaryClass { class_id: number; class_name: string }
 export interface SummarySession { session_id: number; session_date: string; start_time: string; subject_name: string; topic: string; status: string; upcoming: boolean }
 export interface SummaryStudent {
+  attendance_risk?: AttendanceRisk | null
   student_id: number; student_name: string; student_code: string; membership: 'active' | 'former' | 'upcoming' | 'historical'
   cells: SummaryState[]; recorded_sessions: number; attended_sessions: number; absent_sessions: number
   excused_absences: number; unexcused_absences: number; attendance_rate: number | null

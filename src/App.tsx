@@ -1,3 +1,7 @@
+import StudentManagementPage from './components/StudentManagementPage'
+import { canManageStudentProfiles } from './utils/studentAccess'
+import NotificationsPage from './components/NotificationsPage'
+import AttendancePage from './components/AttendancePage'
 import AttendanceSummaryPage from './components/AttendanceSummaryPage'
 import { canViewAttendanceSummary } from './services/attendanceSummaryService'
 import {
@@ -360,6 +364,10 @@ function AuthenticatedApp({
           }
         />
 
+        <Route path="/students" element={canManageStudentProfiles(user) ? <StudentManagementPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Chức năng này chỉ dành cho Quản lý đào tạo có quyền quản lý hồ sơ học viên." />} />
+
+        <Route path="/notifications" element={<NotificationsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} />} />
+
         <Route path="/attendance-summary" element={<ProtectedPage user={user} permission="ATTENDANCE_VIEW">{canViewAttendanceSummary(user) ? <AttendanceSummaryPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')} /> : <PermissionPage user={user} permission="ATTENDANCE_VIEW" title="Bảng chuyên cần" />}</ProtectedPage>} />
 
         <Route
@@ -369,11 +377,7 @@ function AuthenticatedApp({
               user={user}
               permission="ATTENDANCE_VIEW"
             >
-              <PermissionPage
-                user={user}
-                permission="ATTENDANCE_VIEW"
-                title="Điểm danh"
-              />
+              <AttendancePage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} />
             </ProtectedPage>
           }
         />

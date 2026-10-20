@@ -1,3 +1,4 @@
+import NotificationBadge from './NotificationBadge'
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
@@ -86,6 +87,7 @@ export default function Layout({ user, onLogout }: LayoutProps) {
           <div className="topbar-title"><span className="topbar-welcome">Không gian đào tạo</span><span className="topbar-description">{currentSection}</span></div>
         </div>
         <div className="topbar-right">
+          <NotificationBadge />
           <span className="topbar-date"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" /><path d="M7 3v4m10-4v4M3 11h18" /></svg>{today}</span>
           <Link className="topbar-user" to="/profile" aria-label="Mở hồ sơ cá nhân">
             <div className="topbar-avatar">{user.avatar_thumbnail_url || user.avatar_url ? <img src={user.avatar_thumbnail_url || user.avatar_url || ''} alt="" /> : avatarLetter}</div>

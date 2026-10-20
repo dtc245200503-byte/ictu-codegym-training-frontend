@@ -1,3 +1,4 @@
+import AttendanceRiskBadges from './AttendanceRiskBadges'
 import { useEffect, useEffectEvent, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getAttendanceSummary, getSummaryClasses, SummaryError, summaryStates } from '../services/attendanceSummaryService'
@@ -57,7 +58,7 @@ export default function AttendanceSummaryPage({ onSessionExpired }: { onSessionE
             <th scope="col" className="summary-student-column">Học viên</th><th scope="col">Tổng vắng</th><th scope="col" aria-sort={sort === 'rate_asc' ? 'ascending' : 'none'}><button onClick={() => { setSort('rate_asc'); setPage(1) }}>Chuyên cần {sort === 'rate_asc' ? '↑' : '↕'}</button></th>
             {data.sessions.map((session, index) => <th scope="col" key={session.session_id} title={`${session.subject_name} · ${session.topic}`}><span>Buổi {index + 1}</span><strong>{displayDate(session.session_date)}</strong><span>{session.start_time}</span><small>{session.subject_name}</small><small>{session.topic}</small>{session.status === 'cancelled' ? <small>Đã huỷ</small> : session.upcoming && <small>Chưa đến ngày</small>}</th>)}
           </tr></thead><tbody>{data.students.map(student => <tr key={student.student_id} data-student-id={student.student_id}>
-            <th scope="row" className="summary-student-column"><strong>{student.student_name}</strong><span>{student.student_code}</span><small>{memberships[student.membership]}</small></th>
+            <th scope="row" className="summary-student-column"><strong>{student.student_name}</strong><AttendanceRiskBadges flags={student.attendance_risk ? [student.attendance_risk] : []} /><span>{student.student_code}</span><small>{memberships[student.membership]}</small></th>
             <td className="summary-total"><strong>{student.absent_sessions}</strong><small>{student.excused_absences} CP · {student.unexcused_absences} KP</small></td>
             <td className="summary-rate">{student.attendance_rate === null ? <><strong>—</strong><small>Chưa có kết quả</small></> : <><strong>{student.attendance_rate.toLocaleString('vi-VN', { maximumFractionDigits: 2 })}%</strong><progress value={student.attendance_rate} max={100} aria-label={`Tỷ lệ chuyên cần ${student.student_name}`} /><small>{student.attended_sessions}/{student.recorded_sessions} buổi</small></>}</td>
             {student.cells.map((state, index) => <td key={data.sessions[index].session_id}><span className={`summary-cell ${state}`} title={summaryStates[state].label} aria-label={`${student.student_name}, buổi ${index + 1}: ${summaryStates[state].label}`}>{summaryStates[state].short}</span></td>)}

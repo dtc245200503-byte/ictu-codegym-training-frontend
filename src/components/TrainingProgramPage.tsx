@@ -1,3 +1,4 @@
+import AbsencePolicyDialog from './AbsencePolicyDialog'
 import ChoiceSelect from './ChoiceSelect'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -12,6 +13,7 @@ const emptyForm: ProgramData = { code: '', name: '', description: '', total_dura
 const money = (amount: string) => Number(amount).toLocaleString('vi-VN') + ' VNĐ'
 
 export default function TrainingProgramPage({ onSessionExpired }: Props) {
+  const [riskProgram, setRiskProgram] = useState<number | null>(null)
   const [items, setItems] = useState<TrainingProgram[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -131,6 +133,7 @@ export default function TrainingProgramPage({ onSessionExpired }: Props) {
             <td>{money(program.standard_tuition)}</td><td><span className={`program-badge ${program.status}`}>{program.status === 'active' ? 'Đang áp dụng' : 'Ngừng áp dụng'}</span></td>
             <td>{program.active_class_count}<small>{program.total_class_count} lớp tổng cộng</small></td>
             <td><div className="program-row-actions"><button onClick={event => openForm(event.currentTarget, program)}>Sửa</button>
+              <button onClick={() => setRiskProgram(program.curriculum_id)}>Ngưỡng vắng</button>
               <button onClick={event => { lastTrigger.current = event.currentTarget; setAction({ program, type: 'status' }); setFormError('') }}>{program.status === 'active' ? 'Ngừng áp dụng' : 'Áp dụng lại'}</button>
               <button className="program-delete" disabled={!program.can_delete} title={!program.can_delete ? 'Có lớp đang chạy, chỉ được ngừng áp dụng.' : 'Xóa khỏi danh mục'} onClick={event => { lastTrigger.current = event.currentTarget; setAction({ program, type: 'delete' }); setFormError('') }}>Xóa</button><Link className="program-path-link" to={`/courses/${program.curriculum_id}/curriculum`}>Lộ trình</Link></div>
               {!program.can_delete && <small className="program-delete-note">Có lớp đang chạy, không được xóa.</small>}</td>
@@ -152,6 +155,7 @@ export default function TrainingProgramPage({ onSessionExpired }: Props) {
             : <><p><strong>{action?.program.code} — {action?.program.name}</strong></p><p>{action?.type === 'delete' ? 'Xóa chương trình khỏi danh mục để không chọn khi mở lớp mới. Lịch sử các lớp đã mở vẫn được giữ.' : action?.program.status === 'active' ? 'Sau khi ngừng áp dụng, chương trình không còn nằm trong danh sách đang áp dụng. Các lớp hiện có vẫn được giữ nguyên.' : 'Chương trình sẽ xuất hiện lại trong danh sách đang áp dụng.'}</p>{formError && <p className="program-error" role="alert">{formError}</p>}<div className="program-dialog-actions"><button autoFocus className="program-secondary" disabled={busy} onClick={closeDialog}>Hủy</button><button className="program-primary program-confirm" disabled={busy} onClick={confirmAction}>{busy ? 'Đang xử lý...' : 'Xác nhận'}</button></div></>}
         </div>
       </div>}
+    {riskProgram !== null && <AbsencePolicyDialog key={riskProgram} courseId={riskProgram} explain={handleError} onClose={() => setRiskProgram(null)} onSaved={() => { setRiskProgram(null); setSuccess('Đã lưu ngưỡng vắng và cập nhật cảnh báo cho các lớp của chương trình.') }} />}
     </section>
   )
 }

@@ -1,0 +1,13 @@
+.attendance-risk-flags { display: grid; gap: 6px; margin: 10px 0; min-width: 0; }
+.attendance-risk-flag { padding: 10px 12px; border: 1px solid #edb39c; border-left: 4px solid #c35428; border-radius: 8px; color: #843817; background: #fff3e9; overflow-wrap: anywhere; font-size: 12px; text-align: left; }
+.attendance-risk-flag strong, .attendance-risk-flag span { display: block; }
+.attendance-risk-flag span { margin-top: 5px; line-height: 1.5; }
+.absence-policy-dialog { width: min(560px, calc(100vw - 24px)); max-height: calc(100dvh - 32px); box-sizing: border-box; padding: 22px; border: 1px solid #d5deeb; border-radius: 14px; overflow: auto; color: #263b52; }
+.absence-policy-dialog::backdrop { background: #12223f80; }
+.absence-policy-dialog header, .absence-policy-dialog footer { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.absence-policy-dialog h2 { margin: 0; font-size: 20px; }
+.absence-policy-dialog p { line-height: 1.6; }
+.absence-policy-dialog input { box-sizing: border-box; display: block; width: 100%; min-height: 44px; padding: 10px; margin-top: 8px; border: 1px solid #b9c7db; border-radius: 8px; font: inherit; }
+.absence-policy-dialog button { min-height: 44px; border: 1px solid #c8d4e4; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+.absence-policy-dialog button:disabled { opacity: .5; cursor: default; }
+.absence-policy-dialog [role=alert] { padding: 12px; background: #fff0ed; color: #a5362a; border-radius: 8px; }
