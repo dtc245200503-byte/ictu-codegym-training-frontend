@@ -113,3 +113,12 @@ test('absence result notification supports marking string identifier read', asyn
   await mount(); await click(button('Đánh dấu đã đọc'))
   assert.equal(selected, 'absence:7')
 })
+
+test('assignment notification opens the server-provided assignment, not an embedded message URL', async () => {
+  list = async () => ({ items: [{ ...sample(), notification_id: 'assignment:9', target_url: '/assignments?assignment_id=10', message: 'Bài /assignments?assignment_id=999' }], total: 1, unread: 1 })
+  let selected
+  mark = async id => { selected = id; return { unread: 0 } }
+  await mount()
+  assert.equal(q('.inbox-list a').getAttribute('href'), '/assignments?assignment_id=10')
+  await click(button('Đánh dấu đã đọc')); assert.equal(selected, 'assignment:9')
+})

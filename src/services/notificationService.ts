@@ -1,6 +1,6 @@
 import { refreshAccessToken } from './authService'
 const API_URL = `${window.location.protocol}//${window.location.hostname}:8000/api/notifications`
-export interface UserNotification { notification_id: number | string; title: string; message: string; created_at: string; read_at: string | null }
+export interface UserNotification { target_url?: string | null; notification_id: number | string; title: string; message: string; created_at: string; read_at: string | null }
 export class NotificationError extends Error {
   status: number
   constructor(message: string, status: number) { super(message); this.status = status }

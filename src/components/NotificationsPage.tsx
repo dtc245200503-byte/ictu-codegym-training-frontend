@@ -35,14 +35,14 @@ export default function NotificationsPage({ onSessionExpired }: { onSessionExpir
     finally { saving.current = false; setBusy(null) }
   }
   const loading = result?.key !== key
-  return <section className="notifications-page" aria-labelledby="inbox-title"><header><h1 id="inbox-title">Thông báo</h1><p>Cập nhật lịch học, kết quả xin phép vắng và cảnh báo chuyên cần dành cho bạn · Giờ Việt Nam</p></header>
+  return <section className="notifications-page" aria-labelledby="inbox-title"><header><h1 id="inbox-title">Thông báo</h1><p>Bài tập mới, cập nhật lịch học, kết quả xin phép vắng và cảnh báo chuyên cần dành cho bạn · Giờ Việt Nam</p></header>
     <div className="inbox-controls"><label><input type="checkbox" checked={unreadOnly} onChange={event => { setUnreadOnly(event.target.checked); setPage(1) }} /> Chỉ chưa đọc</label><button onClick={() => { setActionError(''); setReload(value => value + 1) }}>Tải lại</button></div>
     {actionError && <p className="inbox-error" role="alert">{actionError}</p>}
     {loading && <p role="status">Đang tải thông báo…</p>}
     {!loading && result?.error && <p className="inbox-error" role="alert">{result.error} <button onClick={() => setReload(value => value + 1)}>Thử lại</button></p>}
     {!loading && result?.items && <><p>{result.unread} chưa đọc · {result.total} thông báo{unreadOnly ? ' chưa đọc' : ''}</p>
       {!result.items.length && <p>Không có thông báo{unreadOnly ? ' chưa đọc' : ''}.</p>}
-      <div className="inbox-list">{result.items.map(item => <article className={item.read_at ? '' : 'is-unread'} key={item.notification_id}><h2>{item.title}{!item.read_at && <span>Chưa đọc</span>}</h2><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</time><p>{item.message}</p>{String(item.notification_id).startsWith('absence:') && <p><Link to="/absence-requests">Xem đơn xin vắng</Link></p>}{!item.read_at && <button disabled={busy !== null} onClick={() => void mark(item.notification_id)}>{busy === item.notification_id ? 'Đang lưu…' : 'Đánh dấu đã đọc'}</button>}</article>)}</div>
+      <div className="inbox-list">{result.items.map(item => <article className={item.read_at ? '' : 'is-unread'} key={item.notification_id}><h2>{item.title}{!item.read_at && <span>Chưa đọc</span>}</h2><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}</time><p>{item.message}</p>{String(item.notification_id).startsWith('assignment:') && <p><Link to={item.target_url && /^\/assignments\?assignment_id=[1-9]\d*$/.test(item.target_url) ? item.target_url : '/assignments'}>Xem bài tập</Link></p>}{String(item.notification_id).startsWith('absence:') && <p><Link to="/absence-requests">Xem đơn xin vắng</Link></p>}{!item.read_at && <button disabled={busy !== null} onClick={() => void mark(item.notification_id)}>{busy === item.notification_id ? 'Đang lưu…' : 'Đánh dấu đã đọc'}</button>}</article>)}</div>
       <div className="inbox-pagination"><button disabled={page === 1} onClick={() => setPage(value => value - 1)}>Trước</button><span>Trang {page}/{Math.max(1, Math.ceil((result.total || 0) / 20))}</span><button disabled={page * 20 >= (result.total || 0)} onClick={() => setPage(value => value + 1)}>Sau</button></div>
     </>}
   </section>
