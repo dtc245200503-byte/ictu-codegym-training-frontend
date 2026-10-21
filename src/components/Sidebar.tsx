@@ -1,5 +1,5 @@
 import { canManageStudentProfiles } from '../utils/studentAccess'
-import { canViewAssignments } from '../services/assignmentService'
+import { canViewAssignments, canViewMyAssignments, canManageAssignments } from '../services/assignmentService'
 import { canViewAttendanceSummary } from '../services/attendanceSummaryService'
 import {
   useEffect,
@@ -29,6 +29,7 @@ interface SidebarProps {
 
 const menuIcons: Record<string, ReactNode> = {
   '/assignments': <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h5" /></svg>,
+  '/my-assignments': <svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2" /><path d="M8 7h8M8 11h8M8 15h5" /></svg>,
   '/attendance-summary': <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M9 3v18M9 15h12M15 9v12" /></svg>,
   '/leads': <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4" /><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2" /><path d="M20 8v6M17 11h6" /></svg>,
   '/profile': (
@@ -161,7 +162,7 @@ const navigationGroups = [
   { title: 'Tổng quan', paths: ['/'] },
   { title: 'Quản lý đào tạo', paths: ['/courses', '/subjects', '/classes', '/students', '/grades', '/attendance', '/attendance-summary', '/tuition'] },
   { title: 'Vận hành', paths: ['/leads', '/users', '/roles'] },
-    { title: 'Cá nhân', paths: ['/assignments', '/notifications', '/profile'] },
+    { title: 'Cá nhân', paths: ['/my-assignments', '/assignments', '/notifications', '/profile'] },
 ]
 
 
@@ -202,7 +203,8 @@ function Sidebar({
 
   const visibleMenuItems = menuItems.filter(
     (item) => {
-      if (item.path === '/assignments') return canViewAssignments(user)
+      if (item.path === '/my-assignments') return canViewMyAssignments(user)
+      if (item.path === '/assignments') return canViewAssignments(user) && (!canViewMyAssignments(user) || canManageAssignments(user))
       if (item.path === '/attendance-summary') return canViewAttendanceSummary(user)
       if (item.path === '/students') return canManageStudentProfiles(user)
       if (item.path === '/classes') return canViewClasses(user)

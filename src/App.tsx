@@ -1,6 +1,7 @@
+import MyAssignmentsPage from './components/MyAssignmentsPage'
 import StudentManagementPage from './components/StudentManagementPage'
 import AssignmentsPage from './components/AssignmentsPage'
-import { canViewAssignments } from './services/assignmentService'
+import { canViewAssignments, canViewMyAssignments, canManageAssignments } from './services/assignmentService'
 import { canManageStudentProfiles } from './utils/studentAccess'
 import NotificationsPage from './components/NotificationsPage'
 import AttendancePage from './components/AttendancePage'
@@ -369,7 +370,8 @@ function AuthenticatedApp({
         <Route path="/students" element={canManageStudentProfiles(user) ? <StudentManagementPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Chức năng này chỉ dành cho Quản lý đào tạo có quyền quản lý hồ sơ học viên." />} />
 
         <Route path="/notifications" element={<NotificationsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} />} />
-        <Route path="/assignments" element={canViewAssignments(user) ? <AssignmentsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Bạn không có quyền xem bài tập." />} />
+        <Route path="/assignments" element={canViewAssignments(user) ? canViewMyAssignments(user) && !canManageAssignments(user) ? <MyAssignmentsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <AssignmentsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Bạn không có quyền xem bài tập." />} />
+        <Route path="/my-assignments" element={canViewMyAssignments(user) ? <MyAssignmentsPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn.')} /> : <ErrorPage statusCode={403} title="Không có quyền truy cập" message="Danh sách này dành cho học viên." />} />
 
         <Route path="/attendance-summary" element={<ProtectedPage user={user} permission="ATTENDANCE_VIEW">{canViewAttendanceSummary(user) ? <AttendanceSummaryPage onSessionExpired={() => onLogout('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.')} /> : <PermissionPage user={user} permission="ATTENDANCE_VIEW" title="Bảng chuyên cần" />}</ProtectedPage>} />
 

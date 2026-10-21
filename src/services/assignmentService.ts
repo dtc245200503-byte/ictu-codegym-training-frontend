@@ -3,6 +3,8 @@ import type { CurrentUser } from '../types/auth'
 
 const API = `${window.location.protocol}//${window.location.hostname}:8000/api/assignments`
 export const canViewAssignments = (user: CurrentUser) => user.permissions.includes('ASSIGNMENT_VIEW') && user.roles.some(role => ['INSTRUCTOR', 'TEACHER', 'STUDENT'].includes(role))
+export const canViewMyAssignments = (user: CurrentUser) => user.permissions.includes('ASSIGNMENT_VIEW') && user.roles.includes('STUDENT')
+export const canManageAssignments = (user: CurrentUser) => canViewAssignments(user) && user.permissions.includes('ASSIGNMENT_MANAGE') && user.roles.some(role => ['INSTRUCTOR', 'TEACHER'].includes(role))
 export interface AssignmentSession {
   session_id: number; class_subject_id: number; session_date: string; start_time: string
   topic: string; class_id: number; class_name: string; subject_name: string
@@ -60,3 +62,18 @@ export async function downloadAssignmentFile(saved: Assignment, file: Assignment
 }
 export const assignmentTime = (value: string) => new Date(value).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
 export const vietnamInputTime = (value: string) => new Date(new Date(value).getTime() + 7 * 3600000).toISOString().slice(0, 16)
+
+export const assignmentProgressLabels = { not_submitted: 'Chưa nộp', submitted: 'Đã nộp', graded: 'Đã chấm', needs_revision: 'Cần làm lại' } as const
+export type AssignmentProgress = keyof typeof assignmentProgressLabels
+export type AssignmentDueSort = 'due_asc' | 'due_desc'
+export interface MyAssignmentItem {
+  assignment_id: number; title: string; class_id: number; class_name: string; subject_name: string
+  due_at: string; max_points: string; progress_status: AssignmentProgress; remaining_seconds: number; urgency: 'normal' | 'overdue' | 'due_soon'
+}
+export interface MyAssignmentList {
+  items: MyAssignmentItem[]; counts: Record<AssignmentProgress, number>; total: number; page: number; page_size: number
+  status: AssignmentProgress; sort: AssignmentDueSort; now: string; urgent_window_hours: number
+}
+export const listMyAssignments = (status: AssignmentProgress, sort: AssignmentDueSort, page: number) => request<MyAssignmentList>(
+  '/mine?' + new URLSearchParams({ status, sort, page: String(page) }))
+export const getMyAssignment = (id: number) => request<Assignment>(`/mine/${id}`)

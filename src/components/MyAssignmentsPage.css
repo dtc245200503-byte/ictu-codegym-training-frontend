@@ -1,0 +1,21 @@
+.my-assignment-groups { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 24px 0; }
+.my-assignment-groups button { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; }
+.my-assignment-groups button[aria-pressed=true] { background: #173b68; color: white; border-color: #173b68; }
+.my-assignment-groups strong { font-size: 20px; }
+.my-assignment-controls { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.my-assignment-controls label { display: flex; align-items: center; gap: 12px; }
+.my-assignment-controls select { font: inherit; min-height: 44px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #263b52; min-width: 0; }
+.my-assignment-hint { color: #52647b; font-size: 13px; }
+.my-assignment-card.due_soon { border: 2px solid #c69024; background: #fffcf1; }
+.my-assignment-card.overdue { border: 2px solid #c44c3a; background: #fff7f5; }
+.my-assignment-card h3 { font-size: 19px; overflow-wrap: anywhere; }
+.my-assignment-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.my-assignment-warning { font-size: 12px; color: #805610; }
+.overdue .my-assignment-warning { color: #a33124; }
+.my-assignment-card .my-assignment-countdown { font-size: 17px; font-weight: 700; color: #173b68; }
+.due_soon .my-assignment-countdown { color: #805610; }
+.overdue .my-assignment-countdown { color: #a33124; }
+.assignment-status.progress-submitted { background: #e6edff; color: #344da4; }
+.assignment-status.progress-graded { background: #dff5e9; color: #17663d; }
+.assignment-status.progress-needs_revision { background: #ffe3de; color: #a33124; }
+@media (max-width: 600px) { .my-assignment-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .my-assignment-controls { align-items: stretch; flex-direction: column; gap: 8px; } .my-assignment-controls label { justify-content: space-between; } .my-assignments-page .assignment-pagination { font-size: 13px; } }
