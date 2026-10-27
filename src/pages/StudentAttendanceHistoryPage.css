@@ -1,0 +1,98 @@
+.student-attendance-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.student-attendance-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.student-attendance-summary article {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color, #e4e7ec);
+  border-radius: 0.75rem;
+  background: var(--surface-color, #fff);
+}
+
+.student-attendance-summary article span,
+.student-attendance-course {
+  color: var(--text-muted, #667085);
+  font-size: 0.875rem;
+}
+
+.student-attendance-summary article strong {
+  font-size: 1.35rem;
+}
+
+.student-attendance-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color, #e4e7ec);
+  border-radius: 0.75rem;
+  background: var(--surface-color, #fff);
+}
+
+.student-attendance-table {
+  width: 100%;
+  min-width: 38rem;
+  border-collapse: collapse;
+}
+
+.student-attendance-table th,
+.student-attendance-table td {
+  padding: 0.8rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #e4e7ec);
+}
+
+.student-attendance-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.student-attendance-table td:nth-child(2) strong,
+.student-attendance-course {
+  display: block;
+}
+
+.student-attendance-status {
+  display: inline-flex;
+  padding: 0.25rem 0.55rem;
+  border-radius: 999px;
+  background: #eef2f6;
+}
+
+.status-present { background: #e8f7ee; color: #17663a; }
+.status-late { background: #fff4dc; color: #805b00; }
+.status-excused_absent { background: #eaf2ff; color: #2459a6; }
+.status-unexcused_absent, .status-absent { background: #ffebeb; color: #9a2929; }
+.status-unrecorded { background: #f2f4f7; color: #475467; }
+
+.student-attendance-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.student-attendance-pagination > div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .student-attendance-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .student-attendance-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .student-attendance-pagination > div .button {
+    flex: 1;
+  }
+}

@@ -59,6 +59,7 @@ export type StudyProgram = {
     sequence: number
     prerequisite_course_id: number | null
   }[]
+  courses_pagination?: { page: number; page_size: number; total: number; pages: number }
 }
 
 export type Classroom = {
@@ -89,6 +90,65 @@ export type TrainingClass = {
   student_count: number
   status: 'preparing' | 'active' | 'completed' | 'cancelled'
   assistants: { id: number; full_name: string }[]
+  total_sessions?: number
+  completed_sessions?: number
+  session_progress?: string
+}
+
+export type AttendanceMatrixStatus =
+  | 'present'
+  | 'late'
+  | 'excused_absent'
+  | 'unexcused_absent'
+  | 'absent'
+
+export type AttendanceMatrixCell = {
+  eligible: boolean
+  status: AttendanceMatrixStatus | null
+}
+
+export type AttendanceMatrixSession = {
+  id: number
+  session_date: string
+  start_time: string
+  end_time: string
+}
+
+export type AttendanceMatrixStudent = {
+  id: number
+  student_code: string | null
+  full_name: string
+  attendance_by_session: Record<string, AttendanceMatrixCell>
+  total_sessions: number
+  attended_count: number
+  present_count: number
+  late_count: number
+  excused_absent_count: number
+  unexcused_absent_count: number
+  legacy_absent_count: number
+  unrecorded_count: number
+  absent_count: number
+  attendance_rate: number | null
+}
+
+export type AttendanceMatrixResponse = {
+  class: Pick<TrainingClass, 'id' | 'code' | 'name'>
+  sessions: AttendanceMatrixSession[]
+  students: AttendanceMatrixStudent[]
+  total_students?: number
+  totals?: {
+    attended_count: number
+    absent_count: number
+    excused_absent_count: number
+    unexcused_absent_count: number
+    legacy_absent_count: number
+    unrecorded_count: number
+  }
+  pagination?: {
+    page: number
+    page_size: number
+    total: number
+  }
 }
 
 export type Assignment = {
@@ -100,6 +160,9 @@ export type Assignment = {
   title: string
   description: string | null
   due_at: string | null
+  max_score: string | null
+  status: 'draft' | 'published' | 'closed'
+  session_id: number | null
   created_at: string
 }
 

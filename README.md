@@ -16,3 +16,9 @@ React + TypeScript frontend for the training-management portal.
 Đăng nhập bằng tài khoản quản trị đã khởi tạo ở backend. Giao diện gọi API thật để đăng nhập, làm mới/thu hồi phiên, đổi mật khẩu, quản lý tài khoản, nhập Excel, môn học, lớp học phần, danh sách học viên và thời khóa biểu.
 
 Build production: `npm run build` · Kiểm tra lint: `npm run lint`.
+
+## Additional workflows
+
+The role-aware portal also includes assignment/attendance workflows and Sprint 7–8 screens for tuition transactions and receipts, student transcript JSON/PDF, graduation eligibility and batch confirmation, and anonymous class surveys. Shared UI foundations are documented in [`../docs/DESIGN.md`](../docs/DESIGN.md). The latest implementation and known integration gaps are tracked in [`../docs/frontend-progress.md`](../docs/frontend-progress.md).
+
+The finance, graduation, survey, and role dashboard screens call the existing authenticated FastAPI endpoints. MySQL and production SMTP were not used for frontend verification. `npm run build`, `npm run lint`, and `npm test` are the local checks.

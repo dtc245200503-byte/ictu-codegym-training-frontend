@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { apiRequest } from '../api'
+import { navigateTo } from '../navigation'
+import { apiRequest, apiRequestWithHeaders } from '../api'
 import { Modal, UiIcon } from '../components/Ui'
+import { ListPagination, SearchableSelect } from '../components/ListControls'
 import { showError } from '../format'
+import { paginationFromHeaders } from '../pagination'
 import type { Course, StudyProgram } from '../types'
 
 function CourseEditor({
@@ -10,11 +13,13 @@ function CourseEditor({
   courses,
   onClose,
   onSaved,
+  presentation = 'dialog',
 }: {
   course: Course | null
   courses: Course[]
   onClose: () => void
   onSaved: () => void
+  presentation?: 'dialog' | 'page'
 }) {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState('')
@@ -62,8 +67,10 @@ function CourseEditor({
 
   return (
     <Modal
-      eyebrow="DANH MỤC ĐÀO TẠO"
+      backHref={presentation === 'page' ? '/courses' : undefined}
+      eyebrow="DANH MỤC MÔN HỌC"
       onClose={onClose}
+      presentation={presentation}
       title={course ? 'Cập nhật môn học' : 'Thêm môn học'}
     >
       <form className="dialog-form" onSubmit={submit}>
@@ -103,8 +110,8 @@ function CourseEditor({
             <textarea defaultValue={course?.description ?? ''} name="description" placeholder="Mục tiêu và nội dung môn học" rows={3} />
           </label>
         </div>
-        <div className="modal-actions">
-          <button className="button button-outline" onClick={onClose} type="button">Hủy</button>
+        <div className={presentation === 'page' ? 'page-actions' : 'modal-actions'}>
+          {presentation === 'dialog' ? <button className="button button-outline" onClick={onClose} type="button">Hủy</button> : null}
           <button className="button button-primary" disabled={busy} type="submit">{busy ? 'Đang lưu…' : course ? 'Lưu thay đổi' : 'Tạo môn học'}</button>
         </div>
       </form>
@@ -126,11 +133,13 @@ function ProgramCoursesModal({
   courses,
   onClose,
   onSaved,
+  presentation = 'dialog',
 }: {
   program: StudyProgram
   courses: Course[]
   onClose: () => void
   onSaved: () => void
+  presentation?: 'dialog' | 'page'
 }) {
   const [orderedIds, setOrderedIds] = useState(program.courses.map((course) => course.id))
   const [prerequisites, setPrerequisites] = useState<Record<number, number | null>>(
@@ -216,7 +225,14 @@ function ProgramCoursesModal({
   }
 
   return (
-    <Modal eyebrow="CHƯƠNG TRÌNH ĐÀO TẠO" onClose={onClose} size="large" title={`Môn học · ${program.name}`}>
+    <Modal
+      backHref={presentation === 'page' ? '/programs' : undefined}
+      eyebrow="CHƯƠNG TRÌNH ĐÀO TẠO"
+      onClose={onClose}
+      presentation={presentation}
+      size="large"
+      title={`Môn học · ${program.name}`}
+    >
       {problem ? <div className="form-alert error-alert">{problem}</div> : null}
       <div className="curriculum-add-row">
         <label className="field">
@@ -258,8 +274,8 @@ function ProgramCoursesModal({
           )
         })}
       </ol>
-      <div className="modal-actions">
-        <button className="button button-outline" onClick={onClose} type="button">Hủy</button>
+      <div className={presentation === 'page' ? 'page-actions' : 'modal-actions'}>
+        {presentation === 'dialog' ? <button className="button button-outline" onClick={onClose} type="button">Hủy</button> : null}
         <button className="button button-primary" disabled={busy || loading} onClick={() => void save()} type="button">{busy ? 'Đang lưu…' : 'Lưu chương trình'}</button>
       </div>
     </Modal>
@@ -270,10 +286,12 @@ function CourseLessonsModal({
   course,
   courses,
   onClose,
+  presentation = 'dialog',
 }: {
   course: Course
   courses: Course[]
   onClose: () => void
+  presentation?: 'dialog' | 'page'
 }) {
   const [lessons, setLessons] = useState<CourseLesson[]>([])
   const [busy, setBusy] = useState(false)
@@ -329,6 +347,7 @@ function CourseLessonsModal({
   }
 
   async function removeLesson(lesson: CourseLesson) {
+    if (!window.confirm(`Xóa buổi ${lesson.sequence}: ${lesson.title}?`)) return
     try {
       await apiRequest(`/courses/${course.id}/lessons/${lesson.id}`, { method: 'DELETE' })
       setRefresh((value) => value + 1)
@@ -361,7 +380,14 @@ function CourseLessonsModal({
   }
 
   return (
-    <Modal eyebrow="SYLLABUS MÔN HỌC" onClose={onClose} size="large" title={`${course.code} · ${course.name}`}>
+    <Modal
+      backHref={presentation === 'page' ? '/courses' : undefined}
+      eyebrow="SYLLABUS MÔN HỌC"
+      onClose={onClose}
+      presentation={presentation}
+      size="large"
+      title={`${course.code} · ${course.name}`}
+    >
       {problem ? <div className="form-alert error-alert">{problem}</div> : null}
       <div className="syllabus-list">
         {lessons.map((lesson) => (
@@ -415,8 +441,8 @@ function CourseLessonsModal({
             <textarea maxLength={3000} name="description" rows={2} />
           </label>
         </div>
-        <div className="modal-actions">
-          <button className="button button-outline" onClick={onClose} type="button">Đóng</button>
+        <div className={presentation === 'page' ? 'page-actions' : 'modal-actions'}>
+          {presentation === 'dialog' ? <button className="button button-outline" onClick={onClose} type="button">Đóng</button> : null}
           <button className="button button-primary" disabled={busy} type="submit">{busy ? 'Đang lưu…' : 'Thêm buổi học'}</button>
         </div>
       </form>
@@ -424,16 +450,258 @@ function CourseLessonsModal({
   )
 }
 
+export function StudyProgramsPage() {
+  const [programs, setPrograms] = useState<StudyProgram[]>([])
+  const [loading, setLoading] = useState(true)
+  const [problem, setProblem] = useState('')
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const pageSize = 20
+  const [total, setTotal] = useState(0)
+  const [pageCount, setPageCount] = useState(1)
+
+  useEffect(() => {
+    let active = true
+    apiRequestWithHeaders<StudyProgram[]>(`/study-programs?page=${page}&page_size=${pageSize}&course_page_size=1`)
+      .then(({ data, headers }) => {
+        if (active) {
+          const pagination = paginationFromHeaders(headers, { page, pageSize })
+          setPrograms(data)
+          setTotal(pagination.total)
+          setPageCount(Math.max(1, pagination.pages))
+          setProblem('')
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [page])
+
+  const filteredPrograms = programs.filter((program) => `${program.code} ${program.name} ${program.degree_level}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi')))
+  const visiblePrograms = filteredPrograms
+
+  return (
+    <section className="page-stack">
+      <div className="page-title-row">
+        <div>
+          <span className="eyebrow">ĐÀO TẠO</span>
+          <h1>Chương trình đào tạo</h1>
+          <p>Xem cấu trúc chương trình và quản lý thứ tự môn học cùng điều kiện tiên quyết.</p>
+        </div>
+        <a className="button button-outline" href="/courses">Danh mục môn học</a>
+      </div>
+      {problem ? <div className="form-alert error-alert">{problem}</div> : null}
+      {!loading ? <div className="list-toolbar panel">
+        <label className="search-box list-search"><UiIcon name="search" size={18} /><input aria-label="Tìm chương trình trên trang hiện tại" onChange={(event) => setSearch(event.target.value)} placeholder="Tìm theo mã, tên chương trình hoặc bậc đào tạo" type="search" value={search} /></label>
+        <span className="table-total">{total} chương trình · tìm kiếm trong trang hiện tại</span>
+      </div> : null}
+      {loading ? <div className="panel table-loading">Đang tải chương trình đào tạo…</div> : null}
+      {!loading && !filteredPrograms.length ? (
+        <div className="panel empty-state"><div className="empty-icon"><UiIcon name="book" size={22} /></div><strong>{search ? 'Không tìm thấy chương trình trên trang hiện tại' : 'Chưa có chương trình đào tạo'}</strong><span>{search ? 'Tìm kiếm hiện áp dụng trên trang đang mở; hãy chuyển trang để xem thêm kết quả.' : 'Chương trình hiện có sẽ được hiển thị tại đây.'}</span></div>
+      ) : null}
+      {!loading && filteredPrograms.length ? (
+        <div className="table-container">
+          <table className="data-table program-table">
+            <thead><tr><th>Ch&#432;&#417;ng tr&#236;nh</th><th>B&#7853;c &#273;&#224;o t&#7841;o</th><th>T&#237;n ch&#7881;</th><th>Th&#7901;i l&#432;&#7907;ng</th><th>M&#244;n h&#7885;c</th><th>Thao t&#225;c</th></tr></thead>
+            <tbody>
+              {visiblePrograms.map((program) => (
+                <tr key={program.id}>
+                  <td data-label="Ch&#432;&#417;ng tr&#236;nh"><strong>{program.name}</strong><span className="table-secondary">{program.code}</span></td>
+                  <td data-label="B&#7853;c &#273;&#224;o t&#7841;o">{program.degree_level}</td>
+                  <td data-label="T&#237;n ch&#7881;">{program.total_credits}</td>
+                  <td data-label="Th&#7901;i l&#432;&#7907;ng">{program.duration_semesters} h&#7885;c k&#7923;</td>
+                  <td data-label="M&#244;n h&#7885;c">{program.courses_pagination?.total ?? program.courses.length}</td>
+                  <td data-label="Thao t&#225;c"><a className="button button-outline button-small" href={`/programs/${program.id}/courses`}>Xem khung ch&#432;&#417;ng tr&#236;nh</a></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+      {!loading ? <ListPagination page={page} pageSize={pageSize} total={total} onPageChange={(nextPage) => { setLoading(true); setPage(Math.min(pageCount, nextPage)) }} /> : null}
+    </section>
+  )
+}
+
+export function CourseEditorPage({
+  courseId,
+  notify,
+}: {
+  courseId: number | null
+  notify: (message: string) => void
+}) {
+  const [courses, setCourses] = useState<Course[]>([])
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [problem, setProblem] = useState('')
+
+  useEffect(() => {
+    let active = true
+    apiRequest<Course[]>('/courses')
+      .then((result) => {
+        const selectedCourse = courseId === null ? null : result.find((item) => item.id === courseId) ?? null
+        if (courseId !== null && !selectedCourse) throw new Error('Không tìm thấy môn học.')
+        if (active) {
+          setCourses(result)
+          setCourse(selectedCourse)
+          setProblem('')
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [courseId])
+
+  if (loading) return <section className="panel detail-loading">Đang tải danh mục môn học…</section>
+  if (problem) {
+    return (
+      <section className="page-stack">
+        <div className="form-alert error-alert">{problem}</div>
+        <button className="button button-outline" onClick={() => navigateTo('/courses')} type="button">
+          Quay lại danh mục môn học
+        </button>
+      </section>
+    )
+  }
+  return (
+    <CourseEditor
+      course={course}
+      courses={courses}
+      onClose={() => navigateTo('/courses')}
+      onSaved={() => {
+        notify(course ? 'Đã cập nhật môn học.' : 'Đã tạo môn học.')
+        navigateTo('/courses')
+      }}
+      presentation="page"
+    />
+  )
+}
+
+export function CourseLessonsPage({ courseId }: { courseId: number }) {
+  const [courses, setCourses] = useState<Course[]>([])
+  const [course, setCourse] = useState<Course | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [problem, setProblem] = useState('')
+
+  useEffect(() => {
+    let active = true
+    apiRequest<Course[]>('/courses')
+      .then((result) => {
+        const selectedCourse = result.find((item) => item.id === courseId) ?? null
+        if (!selectedCourse) throw new Error('Không tìm thấy môn học.')
+        if (active) {
+          setCourses(result)
+          setCourse(selectedCourse)
+          setProblem('')
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [courseId])
+
+  if (loading) return <section className="panel detail-loading">Đang tải syllabus môn học…</section>
+  if (!course) {
+    return (
+      <section className="page-stack">
+        <div className="form-alert error-alert">{problem || 'Không tìm thấy môn học.'}</div>
+        <button className="button button-outline" onClick={() => navigateTo('/courses')} type="button">
+          Quay lại danh mục môn học
+        </button>
+      </section>
+    )
+  }
+  return <CourseLessonsModal course={course} courses={courses} onClose={() => navigateTo('/courses')} presentation="page" />
+}
+
+export function ProgramCurriculumPage({
+  programId,
+  notify,
+}: {
+  programId: number
+  notify: (message: string) => void
+}) {
+  const [courses, setCourses] = useState<Course[]>([])
+  const [program, setProgram] = useState<StudyProgram | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [problem, setProblem] = useState('')
+
+  useEffect(() => {
+    let active = true
+    Promise.all([
+      apiRequest<Course[]>('/courses'),
+      apiRequest<StudyProgram[]>('/study-programs'),
+    ])
+      .then(([courseItems, programs]) => {
+        const selectedProgram = programs.find((item) => item.id === programId) ?? null
+        if (!selectedProgram) throw new Error('Không tìm thấy chương trình đào tạo.')
+        if (active) {
+          setCourses(courseItems)
+          setProgram(selectedProgram)
+          setProblem('')
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [programId])
+
+  if (loading) return <section className="panel detail-loading">Đang tải cấu trúc chương trình…</section>
+  if (!program) {
+    return (
+      <section className="page-stack">
+        <div className="form-alert error-alert">{problem || 'Không tìm thấy chương trình đào tạo.'}</div>
+        <button className="button button-outline" onClick={() => navigateTo('/programs')} type="button">
+          Quay lại chương trình đào tạo
+        </button>
+      </section>
+    )
+  }
+  return (
+    <ProgramCoursesModal
+      courses={courses}
+      onClose={() => navigateTo('/programs')}
+      onSaved={() => {
+        notify('Đã cập nhật khung chương trình.')
+        navigateTo('/programs')
+      }}
+      presentation="page"
+      program={program}
+    />
+  )
+}
+
 export function CoursesPage({ notify }: { notify: (message: string) => void }) {
   const [courses, setCourses] = useState<Course[]>([])
-  const [programs, setPrograms] = useState<StudyProgram[]>([])
   const [q, setQ] = useState('')
+  const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [problem, setProblem] = useState('')
   const [refresh, setRefresh] = useState(0)
-  const [editor, setEditor] = useState<Course | null | undefined>(undefined)
-  const [syllabusCourse, setSyllabusCourse] = useState<Course | null>(null)
-  const [curriculumProgram, setCurriculumProgram] = useState<StudyProgram | null>(null)
   const [department, setDepartment] = useState('')
 
   useEffect(() => {
@@ -453,13 +721,10 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
     return () => window.clearTimeout(timer)
   }, [department, q, refresh])
 
-  useEffect(() => {
-    apiRequest<StudyProgram[]>('/study-programs')
-      .then(setPrograms)
-      .catch((error: unknown) => setProblem(showError(error)))
-  }, [])
-
   const departments = [...new Set(courses.map((course) => course.department))].sort()
+  const pageSize = 10
+  const pageCount = Math.max(1, Math.ceil(courses.length / pageSize))
+  const visibleCourses = courses.slice((page - 1) * pageSize, page * pageSize)
 
   async function toggleActive(course: Course) {
     try {
@@ -493,7 +758,7 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
           <h1>Danh mục môn học</h1>
           <p>Chuẩn hóa môn học, tín chỉ và các điều kiện học trước.</p>
         </div>
-        <button className="button button-primary" onClick={() => setEditor(null)} type="button"><UiIcon name="plus" size={17} /> Thêm môn học</button>
+        <a className="button button-primary" href="/courses/new"><UiIcon name="plus" size={17} /> Thêm môn học</a>
       </div>
 
       <section className="course-overview">
@@ -503,41 +768,22 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
         <div className="course-overview-stat"><strong>{courses.filter((item) => item.is_active).length}</strong><span>Đang mở</span></div>
       </section>
 
-      {programs.length ? (
-        <section className="study-program-grid" aria-label="Chương trình đào tạo">
-          {programs.map((program) => (
-            <article className="panel study-program-card" key={program.id}>
-              <button className="study-program-heading study-program-open" onClick={() => setCurriculumProgram(program)} type="button">
-                <span className="course-mark"><UiIcon name="cap" size={19} /></span>
-                <span><small>{program.code} · {program.degree_level}</small><strong>{program.name}</strong></span>
-              </button>
-              <div className="study-program-metrics">
-                <strong>{program.total_credits}<small> tín chỉ</small></strong>
-                <span>{program.duration_semesters} học kỳ · {program.courses.length} môn mẫu</span>
-              </div>
-              <p>{program.description}</p>
-              <div className="study-program-courses">
-                {program.courses.map((course) => <span key={course.id}>{course.code}</span>)}
-              </div>
-              <button className="text-action" onClick={() => setCurriculumProgram(program)} type="button">Quản lý môn học & tiên quyết</button>
-            </article>
-          ))}
-        </section>
-      ) : null}
-
       <section className="panel data-panel">
         <div className="table-toolbar">
           <div className="search-box">
             <UiIcon name="search" size={18} />
-            <input aria-label="Tìm môn học" onChange={(event) => setQ(event.target.value)} placeholder="Tìm theo mã hoặc tên môn học…" value={q} />
+            <input aria-label="Tìm môn học" onChange={(event) => { setQ(event.target.value); setPage(1) }} placeholder="Tìm theo mã hoặc tên môn học…" value={q} />
           </div>
-          <label className="filter-select">
+          <div className="filter-select">
             <UiIcon name="filter" size={16} />
-            <select aria-label="Lọc theo khoa" onChange={(event) => setDepartment(event.target.value)} value={department}>
-              <option value="">Tất cả khoa / ngành</option>
-              {departments.map((name) => <option key={name} value={name}>{name}</option>)}
-            </select>
-          </label>
+            <SearchableSelect
+              ariaLabel="L?c theo khoa"
+              onChange={(value) => { setDepartment(value); setPage(1) }}
+              options={departments.map((name) => ({ value: name, label: name }))}
+              placeholder="T?t c? khoa / ng?nh"
+              value={department}
+            />
+          </div>
           <span className="table-total">{courses.length} môn học</span>
         </div>
         {problem ? <div className="inline-error">{problem}</div> : null}
@@ -546,7 +792,7 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
             <thead><tr><th>MÔN HỌC</th><th>KHOA / NGÀNH</th><th>TÍN CHỈ</th><th>MÔN TIÊN QUYẾT</th><th>TRẠNG THÁI</th><th aria-label="Thao tác" /></tr></thead>
             <tbody>
               {loading ? <tr><td className="table-loading" colSpan={6}>Đang tải danh mục môn học…</td></tr> : null}
-              {!loading && courses.map((course, index) => (
+              {!loading && visibleCourses.map((course, index) => (
                 <tr key={course.id}>
                   <td>
                     <div className="course-cell">
@@ -560,8 +806,8 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
                   <td><span className={`status-pill ${course.is_active ? 'status-active' : 'status-locked'}`}><i />{course.is_active ? 'Đang mở' : 'Ngừng mở'}</span></td>
                   <td>
                     <div className="row-actions">
-                      <button className="text-action" onClick={() => setSyllabusCourse(course)} type="button">Syllabus</button>
-                      <button aria-label={`Sửa ${course.code}`} className="icon-button row-action" onClick={() => setEditor(course)} title="Chỉnh sửa" type="button"><UiIcon name="edit" size={16} /></button>
+                      <a className="text-action" href={`/courses/${course.id}/lessons`}>Syllabus</a>
+                      <a aria-label={`Sửa ${course.code}`} className="icon-button row-action" href={`/courses/${course.id}/edit`} title="Chỉnh sửa"><UiIcon name="edit" size={16} /></a>
                       <button className={`text-action ${course.is_active ? 'text-warning' : 'text-success'}`} onClick={() => void toggleActive(course)} type="button">{course.is_active ? 'Ngừng mở' : 'Mở lại'}</button>
                       <button aria-label={`Xóa ${course.code}`} className="icon-button row-action danger-action" onClick={() => void removeCourse(course)} title="Xóa môn học" type="button"><UiIcon name="trash" size={16} /></button>
                     </div>
@@ -572,33 +818,9 @@ export function CoursesPage({ notify }: { notify: (message: string) => void }) {
             </tbody>
           </table>
         </div>
+        {!loading && courses.length > pageSize ? <ListPagination page={page} pageSize={pageSize} total={courses.length} onPageChange={(nextPage) => setPage(Math.min(pageCount, nextPage))} /> : null}
         <div className="table-footnote"><UiIcon name="check" size={15} /> Môn học đang có lớp sẽ không thể xóa. Bạn có thể ngừng mở để giữ lịch sử đào tạo.</div>
       </section>
-      {editor !== undefined ? (
-        <CourseEditor
-          course={editor}
-          courses={courses}
-          onClose={() => setEditor(undefined)}
-          onSaved={() => {
-            setEditor(undefined)
-            setRefresh((value) => value + 1)
-            notify('Danh mục môn học đã được cập nhật.')
-          }}
-        />
-      ) : null}
-      {syllabusCourse ? <CourseLessonsModal course={syllabusCourse} courses={courses} onClose={() => setSyllabusCourse(null)} /> : null}
-      {curriculumProgram ? (
-        <ProgramCoursesModal
-          courses={courses}
-          onClose={() => setCurriculumProgram(null)}
-          onSaved={() => {
-            setCurriculumProgram(null)
-            apiRequest<StudyProgram[]>('/study-programs').then(setPrograms).catch((error: unknown) => setProblem(showError(error)))
-            notify('Chương trình đào tạo đã được cập nhật.')
-          }}
-          program={curriculumProgram}
-        />
-      ) : null}
     </div>
   )
 }

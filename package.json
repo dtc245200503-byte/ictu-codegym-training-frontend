@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "node --experimental-strip-types --test tests/attendanceExportDate.test.ts tests/auditDateRange.test.ts tests/auditPresentation.test.ts tests/branding.test.ts tests/navigation.test.ts tests/notificationNavigation.test.ts tests/assignmentCountdown.test.ts tests/assignmentRoster.test.ts tests/pagination.test.ts",
+    "test:notifications": "node --experimental-strip-types --test tests/notificationNavigation.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {
