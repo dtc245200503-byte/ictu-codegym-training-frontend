@@ -23,6 +23,14 @@ function readAsBase64(file: File): Promise<string> {
   })
 }
 
+async function centerCrop(file: File): Promise<{ crop_x: number; crop_y: number; crop_size: number }> {
+  const image = await createImageBitmap(file)
+  const cropSize = Math.min(image.width, image.height)
+  const crop = { crop_x: Math.floor((image.width - cropSize) / 2), crop_y: Math.floor((image.height - cropSize) / 2), crop_size: cropSize }
+  image.close()
+  return crop
+}
+
 export function ProfileModal({
   user,
   avatarUrl,
@@ -44,6 +52,7 @@ export function ProfileModal({
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState('')
   const [message, setMessage] = useState('')
+  const [reminderPreference, setReminderPreference] = useState<'enabled' | 'disabled' | ''>('')
 
   useEffect(() => {
     return () => {
@@ -94,6 +103,7 @@ export function ProfileModal({
         body: JSON.stringify({
           content_type: selectedFile.type,
           data_base64: await readAsBase64(selectedFile),
+          ...await centerCrop(selectedFile),
         }),
       })
       clearSelectedFile()
@@ -115,6 +125,24 @@ export function ProfileModal({
       clearSelectedFile()
       onAvatarChanged()
       setMessage('Ảnh đại diện đã được xóa.')
+    } catch (error) {
+      setProblem(showError(error))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function saveReminderPreference() {
+    if (!reminderPreference) return
+    setBusy(true)
+    setProblem('')
+    setMessage('')
+    try {
+      await apiRequest('/me/class-reminder-preferences', {
+        method: 'PUT',
+        body: JSON.stringify({ class_reminder_opt_out: reminderPreference === 'disabled' }),
+      })
+      setMessage(reminderPreference === 'disabled' ? 'Đã tắt email nhắc lịch học.' : 'Đã bật email nhắc lịch học.')
     } catch (error) {
       setProblem(showError(error))
     } finally {
@@ -183,7 +211,7 @@ export function ProfileModal({
           </label>
           <label className="field">
             <span>Số điện thoại</span>
-            <input defaultValue={user.phone ?? ''} maxLength={30} name="phone" type="tel" />
+            <input defaultValue={user.phone ?? ''} maxLength={30} name="phone" pattern="(?:\+?84|0)(?:3|5|7|8|9)[0-9]{8}" title="Nhập số điện thoại Việt Nam gồm 10 chữ số hoặc mã quốc gia +84." type="tel" />
           </label>
           <label className="field">
             <span>Ngày sinh</span>
@@ -204,6 +232,15 @@ export function ProfileModal({
           </div>
         </div>
       </form>
+      {user.roles.includes('student') ? (
+        <section className="profile-reminder-preference" aria-labelledby="reminder-preference-title">
+          <h3 id="reminder-preference-title">Email nhắc lịch học</h3>
+          <p>Chọn nhận hoặc tắt email nhắc lịch. Lựa chọn của bạn được lưu riêng cho tài khoản học viên.</p>
+          <label className="checkbox-field"><input checked={reminderPreference === 'enabled'} name="class-reminder" onChange={() => setReminderPreference('enabled')} type="radio" /><span>Nhận email nhắc lịch</span></label>
+          <label className="checkbox-field"><input checked={reminderPreference === 'disabled'} name="class-reminder" onChange={() => setReminderPreference('disabled')} type="radio" /><span>Tắt email nhắc lịch</span></label>
+          <button className="button button-outline button-small" disabled={busy || !reminderPreference} onClick={() => void saveReminderPreference()} type="button">Lưu lựa chọn nhắc lịch</button>
+        </section>
+      ) : null}
     </Modal>
   )
 }

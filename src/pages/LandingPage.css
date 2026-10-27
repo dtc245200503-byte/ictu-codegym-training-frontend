@@ -1,0 +1,1507 @@
+/* ==========================================================================
+   ICTU × CodeGym Việt Nam - Trang giới thiệu công khai (Landing Page)
+   Thiết kế chuẩn đại học công nghệ kết hợp nền tảng quản lý đào tạo hiện đại
+   ========================================================================== */
+
+:root {
+  --ictu-primary: #0054a6;
+  --ictu-primary-dark: #003e7e;
+  --ictu-primary-light: #eaf2fb;
+  --ictu-accent: #6553d9;
+  --ictu-accent-dark: #5241c4;
+  --ictu-accent-soft: #f0eeff;
+  --ictu-navy: #0f1c3f;
+  --landing-ink: #192033;
+  --landing-muted: #4e5971;
+  --landing-subtle: #79859c;
+  --landing-line: #e3e8f2;
+  --landing-surface: #ffffff;
+  --landing-page-bg: #f8fafc;
+  --landing-shadow-sm: 0 2px 8px rgba(15, 28, 63, 0.04);
+  --landing-shadow-md: 0 10px 30px -4px rgba(15, 28, 63, 0.08), 0 4px 12px -2px rgba(15, 28, 63, 0.04);
+  --landing-shadow-lg: 0 20px 40px -8px rgba(15, 28, 63, 0.12), 0 8px 16px -4px rgba(15, 28, 63, 0.06);
+  --landing-radius-sm: 8px;
+  --landing-radius-md: 14px;
+  --landing-radius-lg: 20px;
+  --landing-radius-xl: 28px;
+}
+
+/* Container & layout reset */
+.landing-wrapper {
+  min-height: 100vh;
+  background-color: var(--landing-page-bg);
+  color: var(--landing-ink);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  line-height: 1.6;
+}
+
+.landing-container {
+  width: 100%;
+  max-width: 1240px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ==========================================================================
+   A. THANH ĐIỀU HƯỚNG (HEADER & NAVIGATION)
+   ========================================================================== */
+.landing-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 16px 0;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(227, 232, 242, 0.6);
+}
+
+.landing-header.header-scrolled {
+  padding: 10px 0;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(15, 28, 63, 0.08);
+  border-bottom-color: rgba(227, 232, 242, 0.9);
+}
+
+.landing-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Brand Lockup */
+.landing-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+
+.landing-brand-logo {
+  height: 44px;
+  width: 44px;
+  flex: 0 0 44px;
+  border-radius: 0;
+  object-fit: contain;
+  object-position: center;
+  box-shadow: 0 2px 6px rgba(0, 84, 166, 0.15);
+  transition: transform 0.25s ease;
+}
+
+.landing-brand:hover .landing-brand-logo {
+  transform: scale(1.05);
+}
+
+.landing-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-brand-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #0f172a;
+  line-height: 1.25;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.landing-brand-title span.brand-accent {
+  color: #7c3aed;
+  font-weight: 700;
+  margin: 0 1px;
+}
+
+.landing-brand-title span.brand-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #e0f2fe;
+  color: #0284c7;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  line-height: 1.3;
+}
+
+.landing-brand-sub {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.9px;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+/* Nav Links - Desktop */
+.landing-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.landing-nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: #475569;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: all 0.18s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.landing-nav-link:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+
+.landing-nav-link.active {
+  color: #0054a6;
+  background: #eaf2fb;
+  font-weight: 600;
+  padding: 8px 18px;
+}
+
+/* Header Action Buttons */
+.landing-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.landing-btn-login {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  background: #005bb5;
+  color: #ffffff !important;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 91, 181, 0.28);
+  transition: all 0.2s ease;
+}
+
+.landing-btn-login:hover {
+  background: #004c99;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 91, 181, 0.35);
+}
+
+.landing-btn-login:active {
+  transform: translateY(0);
+}
+
+.landing-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--ictu-accent-soft);
+  color: var(--ictu-accent-dark);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--landing-radius-sm);
+  border: 1px solid rgba(101, 83, 217, 0.2);
+}
+
+/* Hamburger button for mobile */
+.landing-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  background: #ffffff;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-radius-sm);
+  cursor: pointer;
+  padding: 0;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.landing-hamburger:hover {
+  background: var(--landing-page-bg);
+  border-color: var(--landing-subtle);
+}
+
+.landing-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: var(--landing-ink);
+  border-radius: 2px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-hamburger.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.landing-hamburger.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.landing-hamburger.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Drawer */
+.landing-mobile-menu {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  z-index: 999;
+  border-bottom: 1px solid var(--landing-line);
+  box-shadow: 0 20px 32px rgba(15, 28, 63, 0.12);
+}
+
+.landing-mobile-menu.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.landing-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.landing-mobile-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--landing-ink);
+  text-decoration: none;
+  border-radius: var(--landing-radius-md);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.landing-mobile-link:hover,
+.landing-mobile-link.active {
+  background: var(--ictu-primary-light);
+  color: var(--ictu-primary);
+}
+
+.landing-mobile-actions {
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--landing-line);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   B. HERO SECTION
+   ========================================================================== */
+.landing-hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 110px;
+  padding-bottom: 64px;
+  overflow: hidden;
+  background-color: #0b1a38;
+}
+
+/* Background image & gradient overlay */
+.landing-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+.landing-hero-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  transform: scale(1.02);
+  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(250, 252, 255, 0.92) 45%,
+    rgba(240, 245, 255, 0.86) 100%
+  );
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.landing-hero-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 48px;
+}
+
+/* Left Hero Content */
+.landing-hero-content {
+  max-width: 620px;
+}
+
+.landing-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(0, 84, 166, 0.08);
+  border: 1px solid rgba(0, 84, 166, 0.16);
+  border-radius: 999px;
+  color: var(--ictu-primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.landing-hero-eyebrow .dot-live {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.landing-hero-title {
+  font-size: clamp(34px, 4.4vw, 54px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+  color: var(--ictu-navy);
+  margin: 0 0 20px;
+}
+
+.landing-hero-title span.title-highlight {
+  background: linear-gradient(135deg, var(--ictu-primary) 0%, var(--ictu-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.landing-hero-desc {
+  font-size: clamp(15px, 1.2vw, 17px);
+  color: var(--landing-muted);
+  line-height: 1.7;
+  margin: 0 0 32px;
+  max-width: 560px;
+}
+
+.landing-hero-buttons {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+.landing-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 26px;
+  background: linear-gradient(135deg, var(--ictu-primary) 0%, #1565c0 100%);
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--landing-radius-md);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(0, 84, 166, 0.28);
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-btn-primary:hover {
+  background: linear-gradient(135deg, var(--ictu-primary-dark) 0%, #0d47a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 84, 166, 0.35);
+}
+
+.landing-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 24px;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ictu-navy);
+  font-size: 15px;
+  font-weight: 700;
+  border-radius: var(--landing-radius-md);
+  border: 1px solid var(--landing-line);
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--landing-shadow-sm);
+  transition: all 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.landing-btn-secondary:hover {
+  background: #ffffff;
+  border-color: var(--ictu-primary);
+  color: var(--ictu-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15, 28, 63, 0.08);
+}
+
+/* Trust Bar in Hero */
+.landing-hero-trust {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(227, 232, 242, 0.8);
+}
+
+.landing-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--landing-subtle);
+}
+
+.landing-trust-item svg {
+  color: var(--ictu-primary);
+  flex-shrink: 0;
+}
+
+/* Right Hero: Staggered Event Photos */
+.landing-hero-media {
+  position: relative;
+  width: 100%;
+  padding: 20px 0;
+}
+
+.landing-event-cards {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.landing-event-card {
+  position: relative;
+  border-radius: var(--landing-radius-lg);
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: var(--landing-shadow-lg);
+  border: 3px solid #ffffff;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease;
+}
+
+.landing-event-card.card-one {
+  transform: translateX(-16px);
+  z-index: 1;
+}
+
+.landing-event-card.card-two {
+  transform: translateX(18px) translateY(-14px);
+  z-index: 2;
+}
+
+.landing-event-card:hover {
+  transform: translateY(-4px) scale(1.015);
+  box-shadow: 0 24px 48px -10px rgba(15, 28, 63, 0.2);
+  z-index: 5;
+}
+
+.landing-event-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.landing-event-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.landing-event-card:hover .landing-event-img {
+  transform: scale(1.03);
+}
+
+.landing-event-caption {
+  padding: 12px 18px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.landing-event-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ictu-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.landing-event-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ictu-navy);
+  margin: 0;
+}
+
+/* ==========================================================================
+   C & D. KHU VỰC GIỚI THIỆU ICTU VÀ CODEGYM (ABOUT SECTION)
+   ========================================================================== */
+.landing-about-section {
+  padding: 96px 0;
+  background: #ffffff;
+  position: relative;
+}
+
+.landing-section-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 56px;
+}
+
+.landing-section-eyebrow {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--ictu-primary);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.landing-section-title {
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 800;
+  color: var(--ictu-navy);
+  letter-spacing: -0.8px;
+  line-height: 1.25;
+  margin: 0 0 16px;
+}
+
+.landing-section-desc {
+  font-size: 16px;
+  color: var(--landing-muted);
+  line-height: 1.65;
+  margin: 0;
+}
+
+.landing-about-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+}
+
+.landing-about-card {
+  background: var(--landing-page-bg);
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-radius-xl);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-about-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ictu-primary), var(--ictu-accent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.landing-about-card:hover {
+  transform: translateY(-4px);
+  background: #ffffff;
+  box-shadow: var(--landing-shadow-lg);
+  border-color: rgba(101, 83, 217, 0.25);
+}
+
+.landing-about-card:hover::before {
+  opacity: 1;
+}
+
+.landing-about-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.landing-about-logo-box {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--landing-radius-md);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--landing-shadow-sm);
+  border: 1px solid var(--landing-line);
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.landing-about-logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.landing-about-logo-box.codegym-brand {
+  background: linear-gradient(135deg, #0b1a38 0%, #172a54 100%);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: -0.5px;
+}
+
+.landing-about-head-text h3 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ictu-navy);
+  margin: 0 0 6px;
+  line-height: 1.25;
+}
+
+.landing-about-head-text span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--landing-subtle);
+}
+
+.landing-about-body {
+  font-size: 15.5px;
+  color: var(--landing-muted);
+  line-height: 1.7;
+  margin: 0 0 24px;
+  flex-grow: 1;
+}
+
+.landing-about-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.landing-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  background: #ffffff;
+  border: 1px solid var(--landing-line);
+  border-radius: 999px;
+  color: var(--landing-muted);
+}
+
+.landing-about-card:hover .landing-pill {
+  background: var(--ictu-primary-light);
+  border-color: rgba(0, 84, 166, 0.15);
+  color: var(--ictu-primary);
+}
+
+.landing-about-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ictu-primary);
+  font-size: 14.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: gap 0.2s ease, color 0.2s ease;
+  width: fit-content;
+}
+
+.landing-about-link:hover {
+  color: var(--ictu-accent);
+  gap: 12px;
+}
+
+/* ==========================================================================
+   PROGRAMS OVERVIEW SECTION
+   ========================================================================== */
+.landing-programs-section {
+  padding: 96px 0;
+  background: var(--landing-page-bg);
+  border-top: 1px solid var(--landing-line);
+}
+
+.landing-programs-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.landing-program-card {
+  background: #ffffff;
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-radius-lg);
+  padding: 32px 28px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.28s ease;
+  box-shadow: var(--landing-shadow-sm);
+}
+
+.landing-program-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ictu-accent);
+  box-shadow: var(--landing-shadow-md);
+}
+
+.landing-program-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: var(--ictu-primary-light);
+  color: var(--ictu-primary);
+  margin-bottom: 16px;
+  width: fit-content;
+}
+
+.landing-program-title {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ictu-navy);
+  margin: 0 0 12px;
+  line-height: 1.3;
+}
+
+.landing-program-desc {
+  font-size: 14.5px;
+  color: var(--landing-muted);
+  line-height: 1.6;
+  margin: 0 0 20px;
+  flex-grow: 1;
+}
+
+.landing-program-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--landing-line);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--landing-subtle);
+}
+
+/* ==========================================================================
+   E. KHU VỰC GIỚI THIỆU HỆ THỐNG (SYSTEM FEATURES SECTION)
+   ========================================================================== */
+.landing-system-section {
+  padding: 104px 0;
+  background: #ffffff;
+  position: relative;
+  border-top: 1px solid var(--landing-line);
+}
+
+.landing-features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.landing-feature-card {
+  background: var(--landing-page-bg);
+  border: 1px solid var(--landing-line);
+  border-radius: var(--landing-radius-lg);
+  padding: 28px 24px;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-feature-card:hover {
+  transform: translateY(-4px);
+  background: #ffffff;
+  border-color: rgba(0, 84, 166, 0.2);
+  box-shadow: var(--landing-shadow-md);
+}
+
+.landing-feature-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--landing-radius-md);
+  background: #ffffff;
+  border: 1px solid var(--landing-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ictu-primary);
+  margin-bottom: 20px;
+  transition: all 0.25s ease;
+  box-shadow: var(--landing-shadow-sm);
+}
+
+.landing-feature-card:hover .landing-feature-icon {
+  background: linear-gradient(135deg, var(--ictu-primary) 0%, var(--ictu-accent) 100%);
+  color: #ffffff;
+  border-color: transparent;
+  transform: scale(1.05);
+}
+
+.landing-feature-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ictu-navy);
+  margin: 0 0 10px;
+  line-height: 1.3;
+}
+
+.landing-feature-desc {
+  font-size: 14px;
+  color: var(--landing-muted);
+  line-height: 1.6;
+  margin: 0 0 16px;
+  flex-grow: 1;
+}
+
+.landing-feature-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #059669;
+}
+
+.landing-feature-status .status-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+/* Call to Action Banner */
+.landing-cta-banner {
+  margin-top: 64px;
+  border-radius: var(--landing-radius-xl);
+  background: linear-gradient(135deg, var(--ictu-navy) 0%, #15295c 60%, var(--ictu-primary) 100%);
+  padding: 56px 48px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  box-shadow: 0 20px 48px -10px rgba(15, 28, 63, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.landing-cta-banner::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 240px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(101, 83, 217, 0.25) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.landing-cta-text h3 {
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 800;
+  margin: 0 0 10px;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.landing-cta-text p {
+  font-size: 15.5px;
+  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  max-width: 580px;
+  line-height: 1.6;
+}
+
+.landing-cta-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.landing-btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: #ffffff;
+  color: var(--ictu-navy);
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: var(--landing-radius-md);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transition: all 0.22s ease;
+}
+
+.landing-btn-cta:hover {
+  background: var(--ictu-primary-light);
+  color: var(--ictu-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+/* ==========================================================================
+   F. FOOTER
+   ========================================================================== */
+.landing-footer {
+  background: #0f1c3f;
+  color: #cbd5e1;
+  padding: 80px 0 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.landing-footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 48px;
+  margin-bottom: 56px;
+}
+
+.landing-footer-brand-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.landing-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: #ffffff;
+}
+
+.landing-footer-logo {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.landing-footer-brand-text strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.landing-footer-brand-text span {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.landing-footer-desc {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.landing-footer-heading {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0 0 20px;
+}
+
+.landing-footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.landing-footer-link {
+  font-size: 14px;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color 0.2s ease, transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.landing-footer-link:hover {
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+.landing-footer-contact {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13.5px;
+  color: #94a3b8;
+}
+
+.landing-footer-contact li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.5;
+}
+
+.landing-footer-contact svg {
+  color: var(--ictu-accent);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.landing-footer-bottom {
+  padding-top: 32px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.landing-footer-bottom a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.landing-footer-bottom a:hover {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   PHẦN 5. HIỆU ỨNG CHUYỂN ĐỘNG (ANIMATIONS & MOTION)
+   ========================================================================== */
+
+/* Page Load animations */
+@keyframes landingFadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landingFadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.anim-hero-eyebrow {
+  animation: landingFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-hero-title {
+  animation: landingFadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+}
+
+.anim-hero-desc {
+  animation: landingFadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+.anim-hero-buttons {
+  animation: landingFadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+}
+
+.anim-hero-trust {
+  animation: landingFadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+}
+
+.anim-card-1 {
+  animation: landingFadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both;
+}
+
+.anim-card-2 {
+  animation: landingFadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+}
+
+/* Scroll reveal classes controlled by IntersectionObserver */
+.reveal-init {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-init.is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.stagger-1 { transition-delay: 0.05s; }
+.stagger-2 { transition-delay: 0.12s; }
+.stagger-3 { transition-delay: 0.19s; }
+.stagger-4 { transition-delay: 0.26s; }
+.stagger-5 { transition-delay: 0.33s; }
+.stagger-6 { transition-delay: 0.40s; }
+.stagger-7 { transition-delay: 0.47s; }
+.stagger-8 { transition-delay: 0.54s; }
+
+/* OS reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal-init {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .landing-hero-bg-img {
+    transform: none !important;
+  }
+
+  .landing-event-card {
+    transform: none !important;
+  }
+}
+
+/* ==========================================================================
+   PHẦN 6. RESPONSIVE BREAKPOINTS (MOBILE, TABLET, LAPTOP, DESKTOP)
+   ========================================================================== */
+
+/* 1. Large Laptops & Desktops (>= 1200px) */
+@media (min-width: 1200px) {
+  .landing-container {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+/* 2. Small Laptops & Tablets Landscape (992px to 1199px) */
+@media (max-width: 1199px) {
+  .landing-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .landing-footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+  }
+
+  .landing-hero-inner {
+    gap: 32px;
+  }
+}
+
+/* 3. Tablets Portrait (768px to 991px) */
+@media (max-width: 991px) {
+  .landing-nav-links {
+    display: none;
+  }
+
+  .landing-hamburger {
+    display: flex;
+  }
+
+  .landing-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 48px;
+    text-align: center;
+  }
+
+  .landing-hero-content {
+    max-width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .landing-hero-buttons {
+    justify-content: center;
+  }
+
+  .landing-hero-trust {
+    justify-content: center;
+  }
+
+  .landing-hero-media {
+    max-width: 580px;
+    margin: 0 auto;
+  }
+
+  .landing-event-card.card-one {
+    transform: translateX(0);
+  }
+
+  .landing-event-card.card-two {
+    transform: translateX(0);
+  }
+
+  .landing-about-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .landing-programs-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .landing-cta-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 28px;
+  }
+
+  .landing-cta-text p {
+    margin: 0 auto;
+  }
+
+  .landing-cta-actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* 4. Mobile Phones (<= 767px - e.g. 360x800, 390x844) */
+@media (max-width: 767px) {
+  .landing-container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .landing-header {
+    padding: 12px 0;
+  }
+
+  .landing-brand-logo {
+    height: 38px;
+  }
+
+  .landing-brand-title {
+    font-size: 13.5px;
+  }
+
+  .landing-brand-sub {
+    font-size: 9px;
+  }
+
+  .landing-btn-login {
+    display: inline-flex;
+    padding: 7px 12px;
+    font-size: 13px;
+    gap: 4px;
+  }
+
+  .landing-hero {
+    padding-top: 96px;
+    padding-bottom: 48px;
+  }
+
+  .landing-hero-title {
+    font-size: 30px;
+    letter-spacing: -0.8px;
+  }
+
+  .landing-hero-desc {
+    font-size: 14.5px;
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  .landing-hero-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .landing-btn-primary,
+  .landing-btn-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    min-height: 48px; /* Touch target >= 44px */
+  }
+
+  .landing-hero-trust {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .landing-event-cards {
+    gap: 16px;
+  }
+
+  .landing-about-section,
+  .landing-programs-section,
+  .landing-system-section {
+    padding: 64px 0;
+  }
+
+  .landing-about-card {
+    padding: 24px 20px;
+    border-radius: var(--landing-radius-lg);
+  }
+
+  .landing-about-head {
+    gap: 14px;
+  }
+
+  .landing-about-logo-box {
+    width: 54px;
+    height: 54px;
+  }
+
+  .landing-about-head-text h3 {
+    font-size: 19px;
+  }
+
+  .landing-features-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .landing-feature-card {
+    padding: 22px 18px;
+  }
+
+  .landing-footer {
+    padding: 56px 0 28px;
+  }
+
+  .landing-footer-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    margin-bottom: 40px;
+  }
+
+  .landing-footer-bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+}
+
+/* 5. Extra Small Devices (<= 380px) */
+@media (max-width: 380px) {
+  .landing-brand-sub {
+    display: none;
+  }
+
+  .landing-hero-title {
+    font-size: 27px;
+  }
+}

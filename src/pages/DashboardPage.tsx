@@ -3,6 +3,7 @@ import { apiRequest } from '../api'
 import { UiIcon } from '../components/Ui'
 import { showError } from '../format'
 import type { DashboardSummary, TrainingClass, User } from '../types'
+import { DashboardApiPanel } from './FinanceAcademicPages'
 
 type PageKey = 'accounts' | 'courses' | 'classes' | 'schedule'
 
@@ -97,10 +98,12 @@ export function DashboardPage({
         ))}
       </section>
 
+      <DashboardApiPanel roles={user.roles} notify={notify} />
+
       <div className="dashboard-lower">
         <section className="panel upcoming-panel">
           <div className="panel-heading">
-            <div><span className="eyebrow">LỊCH GIẢNG DẠY</span><h2>Lớp học sắp tới</h2></div>
+            <div><span className="eyebrow">LỊCH LỚP HỌC</span><h2>Lịch học theo tuần</h2></div>
             <button className="button button-quiet" onClick={() => onNavigate('schedule')} type="button">Xem thời khóa biểu <UiIcon name="arrow" size={16} /></button>
           </div>
           {orderedClasses.length ? (

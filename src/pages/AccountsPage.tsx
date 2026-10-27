@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
+import { navigateTo } from '../navigation'
 import { apiRequest, apiUrl } from '../api'
 import { Modal, RolePill, StatusPill, UiIcon } from '../components/Ui'
 import { initials, showError } from '../format'
@@ -21,11 +22,13 @@ function AccountEditor({
   onClose,
   onSaved,
   notify,
+  fullPage = false,
 }: {
   account: User | null
   onClose: () => void
   onSaved: (created?: User) => void
   notify: (message: string) => void
+  fullPage?: boolean
 }) {
   const [busy, setBusy] = useState(false)
   const [problem, setProblem] = useState('')
@@ -128,14 +131,8 @@ function AccountEditor({
     )
   }
 
-  return (
-    <Modal
-      eyebrow={account ? 'HỒ SƠ NGƯỜI DÙNG' : 'CẤP TÀI KHOẢN MỚI'}
-      onClose={onClose}
-      size="large"
-      title={account ? 'Cập nhật thông tin' : 'Thêm tài khoản'}
-    >
-      <form className="dialog-form" onSubmit={submit}>
+  const form = (
+    <form className={`dialog-form ${fullPage ? 'account-editor-form' : ''}`} onSubmit={submit}>
         {problem ? <div className="form-alert error-alert">{problem}</div> : null}
         <div className="form-grid">
           {!account ? (
@@ -226,14 +223,115 @@ function AccountEditor({
           ) : null}
         </div>
         {!account ? <p className="form-note">Mật khẩu khởi tạo mặc định là 123456. Người dùng bắt buộc đổi mật khẩu ở lần đăng nhập đầu tiên.</p> : null}
-        <div className="modal-actions">
+        <div className={fullPage ? 'page-actions' : 'modal-actions'}>
           <button className="button button-outline" onClick={onClose} type="button">Hủy</button>
           <button className="button button-primary" disabled={busy} type="submit">
             {busy ? 'Đang lưu…' : account ? 'Lưu thay đổi' : 'Tạo tài khoản'} {!busy ? <UiIcon name="arrow" size={16} /> : null}
           </button>
         </div>
       </form>
+  )
+
+  if (fullPage) {
+    return (
+      <div className="page-stack">
+        <div className="page-title-row">
+          <div>
+            <span className="eyebrow">HỆ THỐNG NGƯỜI DÙNG</span>
+            <h1>Cập nhật tài khoản</h1>
+            <p>Chỉnh sửa thông tin cá nhân và các quyền được cấp cho tài khoản.</p>
+          </div>
+          <a className="button button-outline" href="/accounts">Quay lại danh sách</a>
+        </div>
+        <section className="panel account-editor-panel">{form}</section>
+      </div>
+    )
+  }
+
+  return (
+    <Modal
+      eyebrow={account ? 'HỒ SƠ NGƯỜI DÙNG' : 'CẤP TÀI KHOẢN MỚI'}
+      onClose={onClose}
+      size="large"
+      title={account ? 'Cập nhật thông tin' : 'Thêm tài khoản'}
+    >
+      {form}
     </Modal>
+  )
+}
+
+export function AccountEditPage({
+  accountId,
+  notify,
+}: {
+  accountId: number
+  notify: (message: string) => void
+}) {
+  const [account, setAccount] = useState<User | null>(null)
+  const [problem, setProblem] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+
+    async function loadAccount() {
+      let page = 1
+      let total = 0
+      do {
+        const result = await apiRequest<AccountPage>(`/accounts?page=${page}&page_size=100`)
+        const match = result.items.find((item) => item.id === accountId)
+        if (match) {
+          if (active) setAccount(match)
+          return
+        }
+        total = result.total
+        page += 1
+        if (!result.items.length) break
+      } while ((page - 1) * 100 < total)
+
+      throw new Error('Không tìm thấy tài khoản cần chỉnh sửa.')
+    }
+
+    loadAccount()
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+
+    return () => {
+      active = false
+    }
+  }, [accountId])
+
+  if (loading) {
+    return <section className="panel detail-loading">Đang tải hồ sơ tài khoản…</section>
+  }
+
+  if (problem || !account) {
+    return (
+      <section className="page-stack">
+        <div className="form-alert error-alert">{problem || 'Không tìm thấy tài khoản.'}</div>
+        <button
+          className="button button-outline"
+          onClick={() => navigateTo('/accounts')}
+          type="button"
+        >
+          Quay lại danh sách tài khoản
+        </button>
+      </section>
+    )
+  }
+
+  return (
+    <AccountEditor
+      account={account}
+      fullPage
+      notify={notify}
+      onClose={() => navigateTo('/accounts')}
+      onSaved={() => navigateTo('/accounts')}
+    />
   )
 }
 
@@ -376,7 +474,7 @@ export function AccountsPage({
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setLoading(true)
-      const query = new URLSearchParams({ page: String(page), page_size: '10' })
+      const query = new URLSearchParams({ page: String(page), page_size: '20' })
       if (q.trim()) query.set('q', q.trim())
       if (role) query.set('role', role)
       apiRequest<AccountPage>(`/accounts?${query}`)
@@ -465,13 +563,17 @@ export function AccountsPage({
 
   async function confirmStatus(reason: string) {
     if (!statusTarget) return
-    await apiRequest(`/accounts/${statusTarget.account.id}/${statusTarget.action}`, {
+    const result = await apiRequest<{ handover_classes?: string[] }>(`/accounts/${statusTarget.account.id}/${statusTarget.action}`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     })
     setStatusTarget(null)
     setRefresh((value) => value + 1)
-    notify(statusTarget.action === 'lock' ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.')
+    if (statusTarget.action === 'lock' && result.handover_classes?.length) {
+      notify(`Đã khóa tài khoản. Cần bàn giao lớp: ${result.handover_classes.join(', ')}.`)
+    } else {
+      notify(statusTarget.action === 'lock' ? 'Đã khóa tài khoản.' : 'Đã mở khóa tài khoản.')
+    }
   }
 
   return (
@@ -519,6 +621,20 @@ export function AccountsPage({
               {roleOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
+          {(q || role) ? (
+            <button
+              className="button button-ghost button-small"
+              onClick={() => {
+                setQ('')
+                setRole('')
+                setPage(1)
+              }}
+              style={{ color: '#dc2626', fontWeight: 600 }}
+              type="button"
+            >
+              ✕ Xóa bộ lọc
+            </button>
+          ) : null}
           <span className="table-total">{data?.total ?? '—'} tài khoản</span>
         </div>
         {problem ? <div className="inline-error">{problem}</div> : null}
@@ -552,7 +668,7 @@ export function AccountsPage({
                   {canEdit ? (
                     <td>
                       <div className="row-actions">
-                        <button aria-label={`Sửa ${account.full_name}`} className="icon-button row-action" onClick={() => setEditor(account)} title="Chỉnh sửa" type="button"><UiIcon name="edit" size={16} /></button>
+                        <a aria-label={`Sửa ${account.full_name}`} className="icon-button row-action" href={`/accounts/${account.id}/edit`} title="Chỉnh sửa"><UiIcon name="edit" size={16} /></a>
                         {account.id !== user.id ? (
                           <button
                             aria-label={account.is_locked ? `Mở khóa ${account.full_name}` : `Khóa ${account.full_name}`}
@@ -577,7 +693,7 @@ export function AccountsPage({
           </table>
         </div>
         <div className="table-pagination">
-          <span>Hiển thị {data?.items.length ? (page - 1) * 10 + 1 : 0}–{Math.min(page * 10, data?.total ?? 0)} trong {data?.total ?? 0} tài khoản</span>
+          <span>Hiển thị {data?.items.length ? (page - 1) * 20 + 1 : 0}–{Math.min(page * 20, data?.total ?? 0)} trong {data?.total ?? 0} tài khoản</span>
           <div>
             <button className="button button-page" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))} type="button">Trước</button>
             <span className="page-current">{page} / {Math.max(data?.pages ?? 1, 1)}</span>

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 
 import { apiRequest } from '../api'
 import { Modal, UiIcon } from '../components/Ui'
+import { ListPagination } from '../components/ListControls'
 import { showError } from '../format'
 
 type Classroom = { id: number; code: string; capacity: number; online_url: string | null }
@@ -61,6 +62,9 @@ export function RoomsPage() {
   const [editor, setEditor] = useState<Classroom | null | undefined>(undefined)
   const [problem, setProblem] = useState('')
   const [refresh, setRefresh] = useState(0)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const pageSize = 10
 
   useEffect(() => {
     apiRequest<Classroom[]>('/rooms')
@@ -78,6 +82,12 @@ export function RoomsPage() {
     }
   }
 
+  const filteredRooms = rooms.filter((room) =>
+    `${room.code} ${room.online_url ?? ''}`.toLocaleLowerCase('vi').includes(search.trim().toLocaleLowerCase('vi')),
+  )
+  const pageCount = Math.max(1, Math.ceil(filteredRooms.length / pageSize))
+  const visibleRooms = filteredRooms.slice((page - 1) * pageSize, page * pageSize)
+
   return (
     <section className="page-section">
       <div className="page-title-row">
@@ -85,12 +95,19 @@ export function RoomsPage() {
         <button className="button button-primary" onClick={() => setEditor(null)} type="button"><UiIcon name="plus" size={17} /> Thêm phòng</button>
       </div>
       {problem ? <div className="form-alert error-alert">{problem}</div> : null}
+      <div className="list-toolbar panel">
+        <label className="search-box list-search">
+          <UiIcon name="search" size={18} />
+          <input aria-label="Tìm phòng học" onChange={(event) => { setSearch(event.target.value); setPage(1) }} placeholder="Tìm theo mã phòng hoặc liên kết…" type="search" value={search} />
+        </label>
+        <span className="table-total">{filteredRooms.length} phòng</span>
+      </div>
       <div className="table-container">
         <table className="data-table">
           <thead><tr><th>MÃ PHÒNG</th><th>SỨC CHỨA</th><th>LINK TRỰC TUYẾN</th><th /></tr></thead>
           <tbody>
-            {!rooms.length ? <tr><td className="table-empty" colSpan={4}>Chưa có phòng học.</td></tr> : null}
-            {rooms.map((room) => (
+            {!visibleRooms.length ? <tr><td className="table-empty" colSpan={4}>Không tìm thấy phòng phù hợp.</td></tr> : null}
+            {visibleRooms.map((room) => (
               <tr key={room.id}>
                 <td><strong>{room.code}</strong></td>
                 <td>{room.capacity} chỗ</td>
@@ -101,6 +118,7 @@ export function RoomsPage() {
           </tbody>
         </table>
       </div>
+      {filteredRooms.length > pageSize ? <ListPagination page={page} pageSize={pageSize} total={filteredRooms.length} onPageChange={(nextPage) => setPage(Math.min(pageCount, nextPage))} /> : null}
       {editor !== undefined ? <ClassroomEditor onClose={() => setEditor(undefined)} onSaved={() => { setEditor(undefined); setRefresh((value) => value + 1) }} room={editor} /> : null}
     </section>
   )

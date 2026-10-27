@@ -54,13 +54,36 @@ export function Modal({
   onClose,
   children,
   size = 'medium',
+  presentation = 'dialog',
+  backHref,
 }: {
   title: string
   eyebrow?: string
   onClose: () => void
   children: ReactNode
   size?: 'medium' | 'large'
+  presentation?: 'dialog' | 'page'
+  backHref?: string
 }) {
+  if (presentation === 'page') {
+    return (
+      <section className="page-stack workflow-page">
+        <header className="page-title-row">
+          <div>
+            {eyebrow ? <span className="eyebrow">{eyebrow}</span> : null}
+            <h1>{title}</h1>
+          </div>
+          {backHref ? (
+            <a className="button button-outline" href={backHref}>Quay lại</a>
+          ) : (
+            <button className="button button-outline" onClick={onClose} type="button">Quay lại</button>
+          )}
+        </header>
+        <div className="workflow-page-card">{children}</div>
+      </section>
+    )
+  }
+
   return (
     <div
       className="modal-backdrop"

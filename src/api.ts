@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
+const API_BASE = import.meta.env.VITE_API_URL ?? (import.meta.env.DEV ? '/api' : 'http://localhost:8000/api')
 
 type TokenPair = {
   access_token: string
@@ -48,10 +48,12 @@ async function refreshAccessToken(): Promise<boolean> {
   return true
 }
 
-export async function apiRequest<T>(
+export type ApiResponse<T> = { data: T; headers: Headers }
+
+export async function apiRequestWithHeaders<T>(
   path: string,
   options: RequestInit = {},
-): Promise<T> {
+): Promise<ApiResponse<T>> {
   const headers = new Headers(options.headers)
   if (options.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
@@ -74,7 +76,7 @@ export async function apiRequest<T>(
     response = await makeRequest()
   }
 
-  if (response.status === 204) return undefined as T
+  if (response.status === 204) return { data: undefined as T, headers: new Headers(response.headers) }
   const contentType = response.headers.get('Content-Type') ?? ''
   const result = contentType.includes('application/json')
     ? await response.json()
@@ -86,7 +88,14 @@ export async function apiRequest<T>(
         : result
     throw new ApiError(response.status, detail)
   }
-  return result as T
+  return { data: result as T, headers: new Headers(response.headers) }
+}
+
+export async function apiRequest<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  return (await apiRequestWithHeaders<T>(path, options)).data
 }
 
 export async function apiBlobRequest(

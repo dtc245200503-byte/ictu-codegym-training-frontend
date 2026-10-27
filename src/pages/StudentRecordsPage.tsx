@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
+import { navigateTo } from '../navigation'
 import { apiRequest } from '../api'
 import { Modal, UiIcon } from '../components/Ui'
+import { SearchableSelect } from '../components/ListControls'
 import { showError } from '../format'
 import type { AccountPage, TrainingClass, User } from '../types'
 
@@ -16,10 +18,12 @@ function StudentEditor({
   student,
   onClose,
   onSaved,
+  presentation = 'dialog',
 }: {
   student: StudentRecord
   onClose: () => void
   onSaved: () => void
+  presentation?: 'dialog' | 'page'
 }) {
   const [problem, setProblem] = useState('')
   const [busy, setBusy] = useState(false)
@@ -48,7 +52,14 @@ function StudentEditor({
   }
 
   return (
-    <Modal eyebrow="HỒ SƠ HỌC VIÊN" onClose={onClose} size="large" title="Cập nhật hồ sơ">
+    <Modal
+      backHref={presentation === 'page' ? '/students' : undefined}
+      eyebrow="HỒ SƠ HỌC VIÊN"
+      onClose={onClose}
+      presentation={presentation}
+      size="large"
+      title="Cập nhật hồ sơ"
+    >
       <form className="dialog-form" onSubmit={(event) => void submit(event)}>
         <div className="form-grid">
           <label className="field"><span>Mã học viên</span><input readOnly value={student.student_code ?? student.username} /></label>
@@ -60,8 +71,8 @@ function StudentEditor({
           <label className="field field-span-2"><span>Địa chỉ</span><input defaultValue={student.address ?? ''} maxLength={255} name="address" /></label>
         </div>
         {problem ? <div className="form-alert error-alert">{problem}</div> : null}
-        <div className="modal-actions">
-          <button className="button button-outline" onClick={onClose} type="button">Đóng</button>
+        <div className={presentation === 'page' ? 'page-actions' : 'modal-actions'}>
+          {presentation === 'dialog' ? <button className="button button-outline" onClick={onClose} type="button">Đóng</button> : null}
           <button className="button button-primary" disabled={busy} type="submit">{busy ? 'Đang lưu…' : 'Lưu hồ sơ'}</button>
         </div>
       </form>
@@ -76,10 +87,12 @@ function EnrollmentChangeModal({
   student,
   onClose,
   onSaved,
+  presentation = 'dialog',
 }: {
   student: StudentRecord
   onClose: () => void
   onSaved: () => void
+  presentation?: 'dialog' | 'page'
 }) {
   const [today] = useState(() => new Date().toISOString().slice(0, 10))
   const [enrollments, setEnrollments] = useState<EnrollmentEntry[]>([])
@@ -134,17 +147,27 @@ function EnrollmentChangeModal({
   }
 
   return (
-    <Modal eyebrow={`${student.student_code ?? student.username} · BIẾN ĐỘNG HỌC VIÊN`} onClose={onClose} size="large" title={student.full_name}>
+    <Modal
+      backHref={presentation === 'page' ? '/students' : undefined}
+      eyebrow={`${student.student_code ?? student.username} · BIẾN ĐỘNG HỌC VIÊN`}
+      onClose={onClose}
+      presentation={presentation}
+      size="large"
+      title={student.full_name}
+    >
       <form className="dialog-form" onSubmit={(event) => void submit(event)}>
         <div className="form-grid">
           <label className="field"><span>Ghi danh hiện tại</span><select onChange={(event) => setClassId(event.target.value)} required value={classId}><option value="">Chọn lớp</option>{enrollments.map((enrollment) => <option key={enrollment.class_id} value={enrollment.class_id}>{enrollment.class_code} · {enrollment.course_name}</option>)}</select></label>
           <label className="field"><span>Thao tác</span><select onChange={(event) => setAction(event.target.value as typeof action)} value={action}><option value="suspend">Bảo lưu</option><option value="transfer">Chuyển lớp</option><option value="withdraw">Thôi học</option></select></label>
-          {action === 'transfer' ? <label className="field"><span>Lớp đích <b>*</b></span><select name="target_class_id" required><option value="">Chọn lớp</option>{classes.filter((item) => String(item.id) !== classId && ['preparing', 'active'].includes(item.status)).map((item) => <option key={item.id} value={item.id}>{item.code} · {item.course_name}</option>)}</select></label> : null}
+          {action === 'transfer' ? <label className="field"><span>Lớp đích <b>*</b></span><SearchableSelect ariaLabel="Target class" name="target_class_id" options={classes.filter((item) => String(item.id) !== classId && ['preparing', 'active'].includes(item.status)).map((item) => ({ value: String(item.id), label: `${item.code} - ${item.course_name}` }))} placeholder="Choose a class" required /></label> : null}
           <label className="field"><span>Ngày hiệu lực <b>*</b></span><input defaultValue={today} name="effective_date" required type="date" /></label>
           <label className="field field-span-2"><span>Lý do <b>*</b></span><textarea maxLength={2000} minLength={3} name="reason" required rows={3} /></label>
         </div>
         {problem ? <div className="form-alert error-alert">{problem}</div> : null}
-        <div className="modal-actions"><button className="button button-outline" onClick={onClose} type="button">Đóng</button><button className="button button-primary" disabled={busy || !enrollments.length} type="submit">{busy ? 'Đang xử lý…' : 'Lưu biến động'}</button></div>
+        <div className={presentation === 'page' ? 'page-actions' : 'modal-actions'}>
+          {presentation === 'dialog' ? <button className="button button-outline" onClick={onClose} type="button">Đóng</button> : null}
+          <button className="button button-primary" disabled={busy || !enrollments.length} type="submit">{busy ? 'Đang xử lý…' : 'Lưu biến động'}</button>
+        </div>
       </form>
       <section className="lead-activity">
         <h3>Lịch sử biến động ghi danh</h3>
@@ -155,17 +178,81 @@ function EnrollmentChangeModal({
   )
 }
 
+export function StudentWorkflowPage({
+  studentId,
+  action,
+}: {
+  studentId: number
+  action: 'edit' | 'enrollment'
+}) {
+  const [student, setStudent] = useState<StudentRecord | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [problem, setProblem] = useState('')
+
+  useEffect(() => {
+    let active = true
+    async function loadStudent() {
+      let pageNumber = 1
+      let pageCount = 1
+      do {
+        const result = await apiRequest<Omit<AccountPage, 'items'> & { items: StudentRecord[] }>(
+          `/students?page=${pageNumber}&page_size=100`,
+        )
+        pageCount = result.pages
+        const found = result.items.find((item) => item.id === studentId)
+        if (found) {
+          if (active) {
+            setStudent(found)
+            setProblem('')
+          }
+          return
+        }
+        pageNumber += 1
+      } while (pageNumber <= pageCount)
+      throw new Error('Không tìm thấy hồ sơ học viên.')
+    }
+
+    loadStudent()
+      .catch((error: unknown) => {
+        if (active) setProblem(showError(error))
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [studentId])
+
+  if (loading) return <section className="panel detail-loading">Đang tải hồ sơ học viên…</section>
+  if (!student) {
+    return (
+      <section className="page-stack">
+        <div className="form-alert error-alert">{problem || 'Không tìm thấy hồ sơ học viên.'}</div>
+        <button className="button button-outline" onClick={() => navigateTo('/students')} type="button">
+          Quay lại danh sách
+        </button>
+      </section>
+    )
+  }
+
+  const onClose = () => navigateTo('/students')
+  const onSaved = () => navigateTo('/students')
+  return action === 'edit' ? (
+    <StudentEditor onClose={onClose} onSaved={onSaved} presentation="page" student={student} />
+  ) : (
+    <EnrollmentChangeModal onClose={onClose} onSaved={onSaved} presentation="page" student={student} />
+  )
+}
+
 export function StudentRecordsPage() {
   const [items, setItems] = useState<StudentRecord[]>([])
   const [searchInput, setSearchInput] = useState('')
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const [pageInfo, setPageInfo] = useState<AccountPage | null>(null)
-  const [selected, setSelected] = useState<StudentRecord | null>(null)
-  const [enrollmentTarget, setEnrollmentTarget] = useState<StudentRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [problem, setProblem] = useState('')
-  const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
     let active = true
@@ -181,7 +268,7 @@ export function StudentRecordsPage() {
       .catch((error: unknown) => { if (active) setProblem(showError(error)) })
       .finally(() => { if (active) setLoading(false) })
     return () => { active = false }
-  }, [page, query, refresh])
+  }, [page, query])
 
   function submitSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -190,40 +277,85 @@ export function StudentRecordsPage() {
     setQuery(searchInput.trim())
   }
 
-  function saved() {
-    setSelected(null)
-    setLoading(true)
-    setRefresh((value) => value + 1)
-  }
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'locked'>('all')
+
+  const displayedItems = useMemo(() => {
+    if (statusFilter === 'all') return items
+    if (statusFilter === 'active') return items.filter((s) => s.is_active && !s.is_locked)
+    return items.filter((s) => !s.is_active || s.is_locked)
+  }, [items, statusFilter])
 
   return (
     <section className="page-section">
       <div className="page-title-row">
-        <div><span className="eyebrow">HỒ SƠ ĐÀO TẠO</span><h1>Hồ sơ học viên</h1><p>Tra cứu thông tin, chương trình và trạng thái tài khoản học viên.</p></div>
+        <div><span className="eyebrow">HỒ SƠ ĐÀO TẠO</span><h1>Danh sách học viên</h1><p>Tra cứu thông tin, chương trình học, lịch sử học tập và tiến độ chuyên cần của học viên.</p></div>
         <span className="role-pill role-student">{pageInfo?.total ?? 0} học viên</span>
       </div>
-      <div className="page-toolbar">
-        <form className="toolbar-search" onSubmit={submitSearch}>
+      <div className="page-toolbar" style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <form className="toolbar-search" onSubmit={submitSearch} style={{ flex: 1, minWidth: '260px' }}>
           <UiIcon name="search" />
           <input aria-label="Tìm học viên" onChange={(event) => setSearchInput(event.target.value)} placeholder="Mã học viên, họ tên, email, chương trình…" value={searchInput} />
           <button className="button button-outline button-small" type="submit">Tìm</button>
         </form>
+        <label className="field filter-field" style={{ margin: 0, minWidth: '160px' }}>
+          <span className="visually-hidden">Lọc trạng thái</span>
+          <select onChange={(e) => setStatusFilter(e.target.value as any)} value={statusFilter}>
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="locked">Bị khóa</option>
+          </select>
+        </label>
+        {(query || statusFilter !== 'all') ? (
+          <button
+            className="button button-ghost button-small"
+            onClick={() => {
+              setSearchInput('')
+              setQuery('')
+              setStatusFilter('all')
+              setPage(1)
+            }}
+            style={{ color: '#dc2626', fontWeight: 600 }}
+            type="button"
+          >
+            ✕ Xóa bộ lọc
+          </button>
+        ) : null}
       </div>
       {problem ? <div className="form-alert error-alert">{problem}</div> : null}
       <div className="table-container">
-        <table className="data-table">
-          <thead><tr><th>HỌC VIÊN</th><th>MÃ SINH VIÊN</th><th>CHƯƠNG TRÌNH</th><th>LIÊN HỆ</th><th>TRẠNG THÁI</th><th /></tr></thead>
+        <table className="data-table student-records-table">
+          <thead><tr><th>HỌC VIÊN</th><th>MÃ SINH VIÊN</th><th>CHƯƠNG TRÌNH</th><th>LIÊN HỆ</th><th>TRẠNG THÁI</th><th style={{ textAlign: 'right' }}>THAO TÁC</th></tr></thead>
           <tbody>
             {loading ? <tr><td className="table-loading" colSpan={6}>Đang tải hồ sơ…</td></tr> : null}
-            {!loading && !items.length ? <tr><td className="table-empty" colSpan={6}>Không tìm thấy học viên.</td></tr> : null}
-            {!loading && items.map((student) => (
+            {!loading && !displayedItems.length ? <tr><td className="table-empty" colSpan={6}>Không tìm thấy học viên nào.</td></tr> : null}
+            {!loading && displayedItems.map((student: StudentRecord) => (
               <tr key={student.id}>
-                <td><strong>{student.full_name}</strong><span className="table-secondary">{student.email}</span></td>
-                <td><span className="mono-code">{student.student_code ?? student.username}</span></td>
-                <td>{student.study_program ?? 'Chưa cập nhật'}</td>
-                <td>{student.phone ?? '—'}</td>
-                <td><span className={`status-pill ${student.is_active && !student.is_locked ? 'status-active' : 'status-inactive'}`}>{student.is_active && !student.is_locked ? 'Đang hoạt động' : 'Bị khóa'}</span></td>
-                <td><div className="row-actions"><button className="button button-outline button-small" onClick={() => setSelected(student)} type="button">Hồ sơ</button><button className="text-action" onClick={() => setEnrollmentTarget(student)} type="button">Biến động</button></div></td>
+                <td data-label="Học viên">
+                  <a
+                    href={`/students/${student.id}`}
+                    style={{ fontWeight: 600, color: 'var(--blue, #0054a6)', textDecoration: 'none' }}
+                  >
+                    {student.full_name}
+                  </a>
+                  <span className="table-secondary">{student.email}</span>
+                </td>
+                <td data-label="Mã học viên"><span className="mono-code">{student.student_code ?? student.username}</span></td>
+                <td data-label="Chương trình">{student.study_program ?? 'Chưa cập nhật'}</td>
+                <td data-label="Điện thoại">{student.phone ?? '—'}</td>
+                <td data-label="Trạng thái"><span className={`status-pill ${student.is_active && !student.is_locked ? 'status-active' : 'status-inactive'}`}>{student.is_active && !student.is_locked ? 'Đang hoạt động' : 'Bị khóa'}</span></td>
+                <td data-label="Thao tác">
+                  <div className="row-actions" style={{ justifyContent: 'flex-end', gap: '6px' }}>
+                    <a className="button button-primary button-small" href={`/students/${student.id}`}>
+                      Xem chi tiết
+                    </a>
+                    <a className="button button-outline button-small" href={`/students/${student.id}/edit`}>
+                      Sửa
+                    </a>
+                    <a className="text-action" href={`/students/${student.id}/enrollment`}>
+                      Biến động
+                    </a>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -236,8 +368,6 @@ export function StudentRecordsPage() {
           <button className="button button-page" disabled={!pageInfo || page >= pageInfo.pages} onClick={() => { setLoading(true); setPage((value) => value + 1) }} type="button">Sau</button>
         </div>
       </div>
-      {selected ? <StudentEditor onClose={() => setSelected(null)} onSaved={saved} student={selected} /> : null}
-      {enrollmentTarget ? <EnrollmentChangeModal onClose={() => setEnrollmentTarget(null)} onSaved={saved} student={enrollmentTarget} /> : null}
     </section>
   )
 }
